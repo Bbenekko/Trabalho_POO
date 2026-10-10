@@ -1,5 +1,5 @@
 package model;
 
-public enum TipoTesouro {
+enum TipoTesouro {
 
 }

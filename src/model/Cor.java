@@ -1,5 +1,5 @@
 package model;
 
-public enum Cor {
+enum Cor {
 
 }

@@ -1,10 +1,6 @@
 package model;
 
-public class Jogador {
+class Jogador {
 
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
-	}
 
 }
