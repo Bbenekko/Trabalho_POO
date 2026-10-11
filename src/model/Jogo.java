@@ -42,6 +42,12 @@ class Jogo
 
 	boolean iniciarTurno(int coluna)
 	{
+		// porque ele quer coluna??
 		this.jogadores.get(indiceAtual).getTabuleiro();
+	}
+	
+	boolean encerrarTurno()
+	{
+		Turno novoTurno = new Turno();
 	}
 }
