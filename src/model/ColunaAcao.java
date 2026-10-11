@@ -49,7 +49,7 @@ class ColunaAcao
 		return nMovi;
 	}
 	
-	int acoesDeTributo(int turno)
+	int acoesDeTributo(int turnoAtual)
 	{
 		int nPega = 0;
 		
