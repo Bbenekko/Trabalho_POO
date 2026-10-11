@@ -49,7 +49,7 @@ class ColunaAcao
 		return nMovi;
 	}
 	
-	int acoesDeTributo(int turno)
+	int acoesDeTributo(int turnoAtual)
 	{
 		int nPega = 0;
 		
@@ -87,11 +87,28 @@ class ColunaAcao
 	
 	boolean recuperaAtivacoes() // não entendi
 	{
+		ativada = false;
+		return true;
+	}
+	
+	//metodo novo
+	boolean ativar()
+	{
 		return ativada = true;
 	}
 	
 	boolean estaCheia()
 	{
 		return melhorias.size() == 4;
+	}
+	
+	// metodo novo
+	boolean adicionaMelhoria(Melhoria melhoria)
+	{
+		if (this.estaCheia()) {return false;}
+		else
+		{
+			return this.melhorias.add(melhoria);
+		}
 	}
 }
