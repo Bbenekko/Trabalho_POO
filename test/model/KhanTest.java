@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
+// Movimento do Khan entre as províncias do Khan (manual, p. 9)
 public class KhanTest {
 	private static final int TIMEOUT = 2000;
 	private Khan khan;
