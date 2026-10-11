@@ -495,4 +495,11 @@ class Tabuleiro {
 		return qtd;	
 	}
 	
+	boolean todasCidadesConquistadas() {
+		for (Cidade c : this.cidades.values()) {
+			if (!c.foiConquistada())
+				return false;
+		}
+		return true;
+	}
 }
