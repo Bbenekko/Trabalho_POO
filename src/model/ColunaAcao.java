@@ -1,114 +1,88 @@
 package model;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-
-import org.hamcrest.core.IsInstanceOf;
 
 class ColunaAcao 
 {
-	private Regiao regiao; // imagino q se região for nula, é a coluna branca
-	private List<TipoAcao> acoesiniciais;
-	private List<Melhoria> melhorias;
-	private boolean ativada;
+	private Regiao regiao;
+	private List<TipoAcao> acoesIniciais;
+	private List<Melhoria> melhorias = new ArrayList<Melhoria>();
+	private boolean ativada = false;
 	
-	Regiao getRegiao()
-	{
+	ColunaAcao(Regiao regiao, List<TipoAcao> acoesIniciais) {
+		this.regiao = regiao;
+		this.acoesIniciais = new ArrayList<TipoAcao>(acoesIniciais);
+	}
+	
+	Regiao getRegiao() {
 		return this.regiao;
 	}
 	
-	List<Melhoria> getMelhorias()
-	{
-		return this.melhorias;
+	List<Melhoria> getMelhorias() {
+		return Collections.unmodifiableList(this.melhorias);
 	}
 	
-	boolean isAtivada()
-	{
+	boolean isAtivada() {
 		return this.ativada;
 	}
-
-	int movimentos(int turnoAtual)
-	{
-		int nMovi = 0;
-		
-		for (TipoAcao acao : acoesiniciais) 
-		{
-        	if (acao == TipoAcao.mover) 
-		        {
-		        	nMovi += 1;
-		        }
-		}
-		
-		for (Melhoria melhoria : melhorias)
-		{
-			if (melhoria.getTipo() == TipoMelhoria.dois_movimentos && melhoria.utilizavelNoTurno(turnoAtual))
-			{
-				nMovi += 2;
-			}
-		}
-		
-		return nMovi;
-	}
 	
-	int acoesDeTributo(int turnoAtual)
-	{
-		int nPega = 0;
-		
-		for (TipoAcao acao : acoesiniciais) 
-		{
-        	if (acao == TipoAcao.pegar_tributo) 
-		        {
-		        	nPega += 1;
-		        }
-		}
-		
-		for (Melhoria melhoria : melhorias)
-		{
-			if (melhoria.getTipo() == TipoMelhoria.pegar_tributo && melhoria.utilizavelNoTurno(turnoAtual))
-			{
-				nPega += 1;
-			}
-		}
-		
-		return nPega;
-	}
-	
-	boolean exigeKhan()
-	{
-		for (TipoAcao acao : acoesiniciais)
-		{
-			if (acao == TipoAcao.usar_khan)
-			{
-				return true;
-			}
-		}
-		
-		return false;
-	}
-	
-	boolean recuperaAtivacoes() // não entendi
-	{
-		ativada = false;
+	boolean ativar() {
+		if (this.ativada)
+			return false;
+		this.ativada = true;
 		return true;
 	}
-	
-	//metodo novo
-	boolean ativar()
-	{
-		return ativada = true;
+
+	void desativar() {                 
+		this.ativada = false;
 	}
 	
-	boolean estaCheia()
-	{
-		return melhorias.size() == 4;
-	}
-	
-	// metodo novo
-	boolean adicionaMelhoria(Melhoria melhoria)
-	{
-		if (this.estaCheia()) {return false;}
-		else
-		{
-			return this.melhorias.add(melhoria);
+	int movimentos(int turnoAtual) {
+		int n = 0;
+		for (TipoAcao acao : this.acoesIniciais) {
+			if (acao == TipoAcao.mover)
+				n += 1;                        
 		}
+		for (Melhoria m : this.melhorias) {
+			if (m.getTipo() == TipoMelhoria.dois_movimentos && m.utilizavelNoTurno(turnoAtual))
+				n += 2;                       
+		}
+		return n;
+	}
+
+	int acoesDeTributo(int turnoAtual) {
+		int n = 0;
+		for (TipoAcao acao : this.acoesIniciais) {
+			if (acao == TipoAcao.pegar_tributo)
+				n += 1;                        
+		}
+		for (Melhoria m : this.melhorias) {
+			if (m.getTipo() == TipoMelhoria.pegar_tributo && m.utilizavelNoTurno(turnoAtual))
+				n += 1;                       
+		}
+		return n;
+	}
+	
+	boolean exigeKhan() {
+		return this.acoesIniciais.contains(TipoAcao.usar_khan);
+	}
+
+	boolean recuperaAtivacoes() {          
+		return this.acoesIniciais.contains(TipoAcao.recuperar_ativacoes);
+	}
+
+	boolean estaCheia() {
+		return this.melhorias.size() >= 4;
+	}
+
+	boolean adicionaMelhoria(Melhoria melhoria) {   // p. 12
+		if (this.estaCheia())
+			return false;
+		if (this.regiao != null && melhoria.getRegiao() != this.regiao)
+			return false;            
+		this.melhorias.add(melhoria);
+		return true;
 	}
 }
