@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
+// Província do Khan e tributos que vêm do estoque (manual, p. 4 e 9)
 public class ProvinciaTest {
 	private static final int TIMEOUT = 2000;
 	private Estoque estoque;

@@ -54,6 +54,8 @@ public class TurnoTest {
 				turno.pegarTributo(tabuleiro.getProvincia(0)));
 	}
 
+	// Interpretação do grupo para a p. 20: só o peão da Altani que age pega tributo.
+	// A confirmar no texto do tabuleiro da Altani; se mudar, mudam este teste e Turno.provinciaAlcancavel.
 	@Test(timeout = TIMEOUT)
 	public void peaoDeAltaniQueNaoAgeNaoServeDeBaseParaPegarTributo() {
 		// peão que age na parada 0 (sem províncias); o outro na parada 1, vizinha da província 0

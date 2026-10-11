@@ -4,10 +4,10 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
-// Ativação de colunas e linha completa de melhorias (manual, p. 6, 9 e 12)
+// Ativação de colunas e linha completa de melhorias (manual, p. 6, 9, 12 e 20)
 public class TabuleiroJogadorTest {
 	private static final int TIMEOUT = 2000;
-	private static final int AMARELA = 0, VERDE = 1, VERMELHA = 2;
+	private static final int AMARELA = 0, VERDE = 1, VERMELHA = 2, BRANCA = 3;
 	private TabuleiroJogador tabuleiro;
 
 	@Before
@@ -15,8 +15,10 @@ public class TabuleiroJogadorTest {
 		tabuleiro = new TabuleiroJogador(Herdeiro.tolui);
 	}
 
-	private void adicionar(int coluna, Regiao regiao) {
-		tabuleiro.adicionarMelhoria(new Melhoria(TipoMelhoria.pegar_tributo, regiao, null), coluna);
+	private void completarPrimeiraLinha(TabuleiroJogador tj) {
+		tj.adicionarMelhoria(new Melhoria(TipoMelhoria.pegar_tributo, Regiao.russia, null), AMARELA);
+		tj.adicionarMelhoria(new Melhoria(TipoMelhoria.pegar_tributo, Regiao.persia, null), VERDE);
+		tj.adicionarMelhoria(new Melhoria(TipoMelhoria.pegar_tributo, Regiao.china, null), VERMELHA);
 	}
 
 	@Test(timeout = TIMEOUT)
@@ -27,11 +29,25 @@ public class TabuleiroJogadorTest {
 	}
 
 	@Test(timeout = TIMEOUT)
-	public void completarPrimeiraLinhaDaMelhoriaGratis() {
-		adicionar(AMARELA, Regiao.russia);
-		adicionar(VERDE, Regiao.persia);
-		adicionar(VERMELHA, Regiao.china);
-		assertTrue("Linha completa com a coluna branca vazia dá melhoria grátis",
-				tabuleiro.linhaCompleta(1) && tabuleiro.ganhaMelhoriaGratis(1));
+	public void umaMelhoriaEmCadaColunaColoridaCompletaAPrimeiraLinha() {
+		completarPrimeiraLinha(tabuleiro);
+		assertTrue("Uma melhoria em cada coluna colorida completa a 1ª linha", tabuleiro.linhaCompleta(1));
+	}
+
+	@Test(timeout = TIMEOUT)
+	public void primeiraLinhaComColunaBrancaVaziaDaMelhoriaGratis() {
+		completarPrimeiraLinha(tabuleiro);
+		assertTrue("Com o 1º espaço da coluna branca livre, a 1ª linha dá melhoria grátis",
+				tabuleiro.ganhaMelhoriaGratis(1));
+	}
+
+	@Test(timeout = TIMEOUT)
+	public void jochiNaoGanhaMelhoriaGratisNaPrimeiraLinha() {
+		// p. 20: o Jochi começa com uma melhoria no 1º espaço da coluna branca
+		TabuleiroJogador jochi = new TabuleiroJogador(Herdeiro.jochi);
+		jochi.adicionarMelhoria(new Melhoria(TipoMelhoria.dois_movimentos, Regiao.china, null), BRANCA);
+		completarPrimeiraLinha(jochi);
+		assertFalse("Com o 1º espaço da coluna branca ocupado, a 1ª linha não dá melhoria grátis",
+				jochi.ganhaMelhoriaGratis(1));
 	}
 }
