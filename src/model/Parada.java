@@ -105,6 +105,9 @@ class Parada {
 		this.cidades.add(c);
 	}
 	
+	 void colocarYurtInicial(Jogador j) { 
+		  	this.yurts.add(j);
+	 }
 }
 
 
