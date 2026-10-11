@@ -20,7 +20,9 @@ class TrilhaKurultai
 
 	void registrarVotos(Jogador j, int n)
 	{
-		this.votos.replace(j, n);
+		int atual = votos.getOrDefault(j, 0);
+		
+		this.votos.put(j, atual + n);
 		this.fichaNeutra += n;
 		
 		// detecta fim??
