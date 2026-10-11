@@ -26,20 +26,72 @@ class ColunaAcao
 		return this.ativada;
 	}
 
-	int movimentos()
+	int movimentos(int turnoAtual)
 	{
 		int nMovi = 0;
 		
 		for (TipoAcao acao : acoesiniciais) 
 		{
-        	if (acao == mover) 
+        	if (acao == TipoAcao.mover) 
 		        {
-		        	nMovi += 2;
+		        	nMovi += 1;
 		        }
 		}
 		
 		for (Melhoria melhoria : melhorias)
 		{
-			if (melhoria.)
+			if (melhoria.getTipo() == TipoMelhoria.dois_movimentos && melhoria.utilizavelNoTurno(turnoAtual))
+			{
+				nMovi += 2;
+			}
 		}
+		
+		return nMovi;
 	}
+	
+	int acoesDeTributo(int turno)
+	{
+		int nPega = 0;
+		
+		for (TipoAcao acao : acoesiniciais) 
+		{
+        	if (acao == TipoAcao.pegar_tributo) 
+		        {
+		        	nPega += 1;
+		        }
+		}
+		
+		for (Melhoria melhoria : melhorias)
+		{
+			if (melhoria.getTipo() == TipoMelhoria.pegar_tributo && melhoria.utilizavelNoTurno(turnoAtual))
+			{
+				nPega += 1;
+			}
+		}
+		
+		return nPega;
+	}
+	
+	boolean exigeKhan()
+	{
+		for (TipoAcao acao : acoesiniciais)
+		{
+			if (acao == TipoAcao.usar_khan)
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	boolean recuperaAtivacoes() // não entendi
+	{
+		return ativada = true;
+	}
+	
+	boolean estaCheia()
+	{
+		return melhorias.size() == 4;
+	}
+}
