@@ -85,4 +85,28 @@ class ColunaAcao
 		this.melhorias.add(melhoria);
 		return true;
 	}
+	
+	int virtuais(TipoTributo tipo, int turnoAtual) {
+		int n = 0;
+		if (tipo == TipoTributo.moeda) {
+			for (TipoAcao a : this.acoesIniciais) {
+				if (a == TipoAcao.moeda_virtual)
+					n++;
+			}
+		}
+
+		TipoMelhoria melhoria;
+		if (tipo == TipoTributo.moeda)
+			melhoria = TipoMelhoria.moeda_virtual;
+		else if (tipo == TipoTributo.espada)
+			melhoria = TipoMelhoria.espada_virtual;
+		else
+			melhoria = TipoMelhoria.yurt_virtual;
+
+		for (Melhoria m : this.melhorias) {
+			if (m.getTipo() == melhoria && m.utilizavelNoTurno(turnoAtual))
+				n++;
+		}
+		return n;
+	}
 }
