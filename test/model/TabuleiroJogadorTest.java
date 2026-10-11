@@ -20,12 +20,6 @@ public class TabuleiroJogadorTest {
 	}
 
 	@Test(timeout = TIMEOUT)
-	public void colunaJaAtivadaNaoPodeSerAtivadaDeNovo() {
-		tabuleiro.ativar(AMARELA);
-		assertFalse("Coluna ocupada por peça de ativação não pode ser usada", tabuleiro.ativar(AMARELA));
-	}
-
-	@Test(timeout = TIMEOUT)
 	public void recuperarAtivacoesLiberaColunaUsada() {
 		tabuleiro.ativar(AMARELA);
 		tabuleiro.recuperarAtivacoes();

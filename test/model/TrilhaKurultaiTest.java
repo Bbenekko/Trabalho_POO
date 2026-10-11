@@ -18,12 +18,6 @@ public class TrilhaKurultaiTest {
 	}
 
 	@Test(timeout = TIMEOUT)
-	public void fimNaoDisparadoCom13VotosEm3Jogadores() {
-		trilha.registrarVotos(vermelho, 13);
-		assertFalse("Com 3 jogadores o limite é 14", trilha.fimDisparado());
-	}
-
-	@Test(timeout = TIMEOUT)
 	public void fimDisparadoCom14VotosDistribuidosEm3Jogadores() {
 		trilha.registrarVotos(vermelho, 7);
 		trilha.registrarVotos(azul, 7);

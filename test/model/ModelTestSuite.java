@@ -9,11 +9,13 @@ import org.junit.runners.Suite;
 	CidadeTest.class,
 	ColunaAcaoTest.class,
 	JogadorTest.class,
+	JogoTest.class,
 	KhanTest.class,
 	ParadaTest.class,
 	ProvinciaTest.class,
 	TabuleiroJogadorTest.class,
 	TabuleiroTest.class,
-	TrilhaKurultaiTest.class
+	TrilhaKurultaiTest.class,
+	TurnoTest.class
 })
 public class ModelTestSuite {}

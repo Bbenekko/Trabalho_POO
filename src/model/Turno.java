@@ -227,11 +227,9 @@ class Turno {
 	}
 
 	private boolean provinciaAlcancavel(Provincia prov) {
-		for (List<Parada> visitadas : this.paradasVisitadas.values()) {
-			for (Parada p : visitadas) {
-				if (p.getProvincias().contains(prov))
-					return true;
-			}
+		for (Parada p : this.paradasVisitadas.get(this.peaoQueAge())) {
+			if (p.getProvincias().contains(prov))
+				return true;
 		}
 		return false;
 	}
