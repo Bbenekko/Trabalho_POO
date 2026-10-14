@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
-// Regras de ocupação de paradas por peões e yurts (manual, p. 7 e 11)
 public class ParadaTest {
 	private static final int TIMEOUT = 2000;
 	private Parada simples, dupla;

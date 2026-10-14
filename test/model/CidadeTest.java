@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
-// Regras de ataque e conquista de cidades (manual, p. 10)
 public class CidadeTest {
 	private static final int TIMEOUT = 2000;
 	private Cidade samarcanda;

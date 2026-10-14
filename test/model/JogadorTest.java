@@ -8,7 +8,6 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-// Entrega de tesouros aos conselheiros (manual, p. 12 e 13)
 public class JogadorTest {
 	private static final int TIMEOUT = 2000;
 	private Jogador jogador;
