@@ -51,38 +51,41 @@ class Turno {
 	}
 
 
+	boolean podeMover(Peao peao, List<Parada> caminho) {
+		List<Parada> pagas = this.paradasPagas(peao, caminho);
+		if (pagas == null || pagas.size() > this.movimentosRestantes)
+			return false;
+		return caminho.get(caminho.size() - 1).podeTerminarAqui(peao);
+	}
+
 	boolean mover(Peao peao, List<Parada> caminho) {
-		if (peao.getDono() != this.jogador || caminho.isEmpty())
+		if (!this.podeMover(peao, caminho))
 			return false;
 
-		Parada anterior = peao.getPosicao();
-		int custo = 0;
-		List<Parada> novasVisitadas = new ArrayList<Parada>();
-
-		for (int i = 0; i < caminho.size(); i++) {
-			Parada p = caminho.get(i);
-			if (!this.tabuleiro.saoAdjacentes(anterior, p))
-				return false;
-			boolean ultima = (i == caminho.size() - 1);
-			if (!ultima && p.temYurtDe(this.jogador)) {
-				
-			} else {
-				custo++;
-				novasVisitadas.add(p);
-			}
-			anterior = p;
-		}
-
-		Parada destino = caminho.get(caminho.size() - 1);
-		if (custo > this.movimentosRestantes)
-			return false;
-		if (!destino.podeTerminarAqui(peao))   
-			return false;
-
-		peao.moverPara(destino);
-		this.movimentosRestantes -= custo;
+		List<Parada> novasVisitadas = this.paradasPagas(peao, caminho);
+		peao.moverPara(caminho.get(caminho.size() - 1));
+		this.movimentosRestantes -= novasVisitadas.size();
 		this.paradasVisitadas.get(peao).addAll(novasVisitadas);
 		return true;
+	}
+
+	// paradas do caminho que custam movimento (passar por yurt proprio e gratis); null se o caminho e invalido
+	private List<Parada> paradasPagas(Peao peao, List<Parada> caminho) {
+		if (peao.getDono() != this.jogador || caminho.isEmpty())
+			return null;
+
+		Parada anterior = peao.getPosicao();
+		List<Parada> pagas = new ArrayList<Parada>();
+		for (int i = 0; i < caminho.size(); i++) {
+			Parada p = caminho.get(i);
+			if (p == null || !this.tabuleiro.saoAdjacentes(anterior, p))
+				return null;
+			boolean ultima = (i == caminho.size() - 1);
+			if (ultima || !p.temYurtDe(this.jogador))
+				pagas.add(p);
+			anterior = p;
+		}
+		return pagas;
 	}
 
 
