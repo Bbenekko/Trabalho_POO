@@ -75,28 +75,34 @@ public class ModelFacade {
 		return this.jogo().getTurnoAtual() != null;
 	}
 
+	// clique no mapa: so o destino; o Turno procura o caminho mais barato
 	public boolean podeMover(int peao, int idParada) {
-		return this.podeMover(peao, listaDe(idParada));
-	}
-
-	public boolean podeMover(int peao, List<Integer> caminho) {
-		Turno turno = this.jogo().getTurnoAtual();
-		Peao p = this.peaoDaVez(peao);
-		if (turno == null || p == null)
-			return false;
-		return turno.podeMover(p, this.paradas(caminho));
+		List<Parada> caminho = this.caminhoAte(peao, idParada);
+		return caminho != null && this.jogo().getTurnoAtual().podeMover(this.peaoDaVez(peao), caminho);
 	}
 
 	public boolean mover(int peao, int idParada) {
-		return this.mover(peao, listaDe(idParada));
+		List<Parada> caminho = this.caminhoAte(peao, idParada);
+		return caminho != null && this.jogo().getTurnoAtual().mover(this.peaoDaVez(peao), caminho);
+	}
+
+	// caminho escolhido parada a parada (sem a de partida; a ultima e o destino)
+	public boolean podeMover(int peao, List<Integer> caminho) {
+		Turno turno = this.jogo().getTurnoAtual();
+		Peao p = this.peaoDaVez(peao);
+		List<Parada> paradas = this.paradas(caminho);
+		if (turno == null || p == null || paradas == null)
+			return false;
+		return turno.podeMover(p, paradas);
 	}
 
 	public boolean mover(int peao, List<Integer> caminho) {
 		Turno turno = this.jogo().getTurnoAtual();
 		Peao p = this.peaoDaVez(peao);
-		if (turno == null || p == null)
+		List<Parada> paradas = this.paradas(caminho);
+		if (turno == null || p == null || paradas == null)
 			return false;
-		return turno.mover(p, this.paradas(caminho));
+		return turno.mover(p, paradas);
 	}
 
 	public boolean pegarTributo(int idProvincia) {
@@ -333,17 +339,26 @@ public class ModelFacade {
 		return p;
 	}
 
+	// null se algum id nao existir
 	private List<Parada> paradas(List<Integer> ids) {
 		List<Parada> caminho = new ArrayList<Parada>();
-		for (int id : ids)
-			caminho.add(this.tabuleiro().getParada(id));   // id invalido vira null e o Turno recusa
+		for (int id : ids) {
+			Parada p = this.tabuleiro().getParada(id);
+			if (p == null)
+				return null;
+			caminho.add(p);
+		}
 		return caminho;
 	}
 
-	private static List<Integer> listaDe(int id) {
-		List<Integer> lista = new ArrayList<Integer>();
-		lista.add(id);
-		return lista;
+	// caminho mais barato do peao da vez ate a parada, ou null (sem turno, peao ou parada invalidos)
+	private List<Parada> caminhoAte(int peao, int idParada) {
+		Turno turno = this.jogo().getTurnoAtual();
+		Peao p = this.peaoDaVez(peao);
+		Parada destino = this.tabuleiro().getParada(idParada);
+		if (turno == null || p == null || destino == null)
+			return null;
+		return turno.caminhoAte(p, destino);
 	}
 
 	// "tipo:regiao" ou "tesouro_virtual:regiao:tesouro"

@@ -7,45 +7,140 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 
-import controller.ControladorJogo;
+import model.ModelFacade;
 
-class PainelTabuleiro extends JPanel {
-    private static final int LARGURA = 995;
-    private static final int ALTURA = 1000;
-    private static final int RAIO = 25; 
-    private static final int TAM_PEAO = 30;
+public class PainelTabuleiro extends JPanel {
+    // tamanho original de doc/img/tabuleiro.jpg; as coordenadas das paradas usam estes pixels
+    private static final int LARGURA_IMAGEM = 2905;
+    private static final int ALTURA_IMAGEM = 2919;
+
+    // limites do enunciado (janela de no máximo 1400 x 1050) descontando a lateral e a barra de título
+    private static final int LARGURA_MAXIMA = 1150;
+    private static final int ALTURA_MAXIMA = 1000;
+    private static final int LARGURA_LATERAL = 250;
+    private static final int BARRA_DE_TITULO = 40;
+
+    // em pixels da imagem original; na tela, ficam proporcionais ao tamanho do mapa
+    private static final int RAIO_IMAGEM = 75;      // tolerância do clique
+    private static final int PEAO_IMAGEM = 90;      // tamanho do peão
 
     // true: clique imprime coordenadas e mostra as paradas medidas
     // false: jogo normal (deixe false na entrega)
-    private static final boolean MODO_MEDICAO = true;
+    private static final boolean MODO_MEDICAO = false;
 
-    private ControladorJogo controlador;
+    private ModelFacade modelo;
+    private double escala;                          // pixels da tela por pixel da imagem
+    private int largura;
+    private int altura;
+    private int tamPeao;
     private Image imgTabuleiro;
-    private Map<Integer, Point> coordenadas = new HashMap<Integer, Point>();
+    private Map<Integer, Point> coordenadas = new HashMap<Integer, Point>();   // em pixels da imagem
     private Map<String, Image> imgPeoes = new HashMap<String, Image>();
-    private int proximoId = 0; 
+    private int proximoId = 0;                      // só usado no modo de medição
 
-    PainelTabuleiro(ControladorJogo c) {
-        this.controlador = c;
+    PainelTabuleiro(ModelFacade modelo) {
+        this.modelo = modelo;
+        calcularTamanho();
         carregarImagens();
         carregarCoordenadas();
-        setPreferredSize(new Dimension(LARGURA, ALTURA));
-        addMouseListener(new TratadorClique());
+        setPreferredSize(new Dimension(largura, altura));
+
+        // o clique de jogo é registrado pelo Controller (ObservadorTabuleiro);
+        // este listener só existe para medir as coordenadas
+        if (MODO_MEDICAO)
+            addMouseListener(new MedidorClique());
     }
 
+    // ---------- TAMANHO ----------
+
+    // o maior tamanho que cabe na tela deste computador (sem a barra de tarefas)
+    // e nos limites do enunciado, mantendo a proporção da imagem
+    private void calcularTamanho() {
+        Rectangle tela = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        int larguraDisponivel = Math.min(LARGURA_MAXIMA, tela.width - LARGURA_LATERAL);
+        int alturaDisponivel = Math.min(ALTURA_MAXIMA, tela.height - BARRA_DE_TITULO);
+
+        escala = Math.min((double) larguraDisponivel / LARGURA_IMAGEM,
+                          (double) alturaDisponivel / ALTURA_IMAGEM);
+        largura = (int) (LARGURA_IMAGEM * escala);
+        altura = (int) (ALTURA_IMAGEM * escala);
+        tamPeao = Math.max(16, (int) (PEAO_IMAGEM * escala));
+    }
+
+    // posição de uma parada na tela
+    private Point naTela(Point naImagem) {
+        return new Point((int) (naImagem.x * escala), (int) (naImagem.y * escala));
+    }
+
+    // ---------- CARREGAMENTO ----------
+
+    // reduz a imagem uma vez só; redimensionar a cada repaint deixa o jogo lento
     private void carregarImagens() {
         Image original = Imagens.carregar("doc/img/tabuleiro.jpg");
         if (original != null)
-            imgTabuleiro = original.getScaledInstance(LARGURA, ALTURA, Image.SCALE_SMOOTH);
+            imgTabuleiro = original.getScaledInstance(largura, altura, Image.SCALE_SMOOTH);
     }
 
     // cole aqui as 34 linhas impressas no Console pelo modo de medição
+    // (as coordenadas são da imagem original, então valem para qualquer tamanho de tela)
     private void carregarCoordenadas() {
-        // coordenadas.put(0, new Point(132, 88));
-        // ...
-        // coordenadas.put(33, new Point(500, 500));
+    	coordenadas.put(0, new Point(128, 542));
+    	coordenadas.put(1, new Point(470, 542));
+    	coordenadas.put(2, new Point(489, 256));
+    	coordenadas.put(3, new Point(888, 211));
+    	coordenadas.put(4, new Point(854, 560));
+    	coordenadas.put(5, new Point(1083, 843));
+    	coordenadas.put(6, new Point(1275, 497));
+    	coordenadas.put(7, new Point(1565, 670));
+    	coordenadas.put(8, new Point(1753, 226));
+    	coordenadas.put(9, new Point(1892, 594));
+    	coordenadas.put(10, new Point(2238, 493));
+    	coordenadas.put(11, new Point(463, 888));
+    	coordenadas.put(12, new Point(839, 1189));
+    	coordenadas.put(13, new Point(959, 1557));
+    	coordenadas.put(14, new Point(572, 1411));
+    	coordenadas.put(15, new Point(211, 1493));
+    	coordenadas.put(16, new Point(181, 1915));
+    	coordenadas.put(17, new Point(448, 1640));
+    	coordenadas.put(18, new Point(718, 1892));
+    	coordenadas.put(19, new Point(1275, 1821));
+    	coordenadas.put(20, new Point(1215, 2231));
+    	coordenadas.put(21, new Point(1475, 2050));
+    	coordenadas.put(22, new Point(2494, 655));
+    	coordenadas.put(23, new Point(2765, 880));
+    	coordenadas.put(24, new Point(2524, 1072));
+    	coordenadas.put(25, new Point(2133, 1241));
+    	coordenadas.put(26, new Point(1892, 1599));
+    	coordenadas.put(27, new Point(2174, 1670));
+    	coordenadas.put(28, new Point(2550, 1535));
+    	coordenadas.put(29, new Point(1832, 2223));
+    	coordenadas.put(30, new Point(2238, 2231));
+    	coordenadas.put(31, new Point(2524, 2024));
+    	coordenadas.put(32, new Point(2588, 2400));
+    	coordenadas.put(33, new Point(1448, 1264));
     }
 
+    // ---------- USADOS PELO CONTROLLER ----------
+
+    public boolean emModoMedicao() {
+        return MODO_MEDICAO;
+    }
+
+    // id da parada mais próxima do clique, se estiver dentro do raio; senão -1
+    public int paradaEm(int x, int y) {
+        int maisProxima = -1;
+        double menorDistancia = RAIO_IMAGEM * escala;
+        for (Integer id : coordenadas.keySet()) {
+            double d = naTela(coordenadas.get(id)).distance(x, y);
+            if (d <= menorDistancia) {
+                menorDistancia = d;
+                maisProxima = id;
+            }
+        }
+        return maisProxima;
+    }
+
+    // ---------- DESENHO ----------
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -59,38 +154,44 @@ class PainelTabuleiro extends JPanel {
     }
 
     private void desenharPeoes(Graphics2D g2) {
+        // quantos peões já foram desenhados em cada parada, para pô-los lado a lado
         Map<Integer, Integer> naParada = new HashMap<Integer, Integer>();
 
-        for (int j = 0; j < controlador.numeroDeJogadores(); j++) {
-            Image img = imagemDoPeao(controlador.corDoJogador(j));
+        for (int j = 0; j < modelo.numeroDeJogadores(); j++) {
+            Image img = imagemDoPeao(modelo.corDoJogador(j));
 
-            for (int p = 0; p < controlador.numeroDePeoes(j); p++) {
-                int id = controlador.posicaoDoPeao(j, p);
-                Point base = coordenadas.get(id);
-                if (base == null)
+            for (int p = 0; p < modelo.numeroDePeoes(j); p++) {
+                int id = modelo.posicaoDoPeao(j, p);
+                if (!coordenadas.containsKey(id))   // parada ainda não medida
                     continue;
+                Point base = naTela(coordenadas.get(id));
 
                 int n = naParada.getOrDefault(id, 0);
                 naParada.put(id, n + 1);
 
-                int dx = (n % 3 - 1) * (TAM_PEAO / 2);
-                int dy = (n / 3) * (TAM_PEAO / 2);
-                int x = base.x + dx - TAM_PEAO / 2;
-                int y = base.y + dy - TAM_PEAO / 2;
+                // até 3 por linha, deslocados a partir do centro da parada
+                int dx = (n % 3 - 1) * (tamPeao * 2 / 3);
+                int dy = (n / 3) * (tamPeao * 2 / 3);
+                int x = base.x + dx - tamPeao / 2;
+                int y = base.y + dy - tamPeao / 2;
                 g2.drawImage(img, x, y, null);
             }
         }
     }
 
+    // bolinhas vermelhas com o id, para conferir as coordenadas
     private void desenharParadasMedidas(Graphics2D g2) {
         g2.setColor(Color.RED);
         for (Integer id : coordenadas.keySet()) {
-            Point p = coordenadas.get(id);
+            Point p = naTela(coordenadas.get(id));
             g2.fillOval(p.x - 5, p.y - 5, 10, 10);
             g2.drawString(String.valueOf(id), p.x + 7, p.y - 7);
         }
     }
 
+    // ---------- IMAGENS DOS PEÕES ----------
+
+    // cria a imagem de cada cor na primeira vez e reaproveita depois
     private Image imagemDoPeao(String cor) {
         Image img = imgPeoes.get(cor);
         if (img == null) {
@@ -101,18 +202,19 @@ class PainelTabuleiro extends JPanel {
     }
 
     private Image criarPeao(Color cor) {
-        BufferedImage img = new BufferedImage(TAM_PEAO, TAM_PEAO, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage img = new BufferedImage(tamPeao, tamPeao, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = img.createGraphics();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setColor(cor);
-        g.fillOval(2, 2, TAM_PEAO - 4, TAM_PEAO - 4);
+        g.fillOval(2, 2, tamPeao - 4, tamPeao - 4);
         g.setColor(Color.BLACK);
         g.setStroke(new BasicStroke(2));
-        g.drawOval(2, 2, TAM_PEAO - 4, TAM_PEAO - 4);
+        g.drawOval(2, 2, tamPeao - 4, tamPeao - 4);
         g.dispose();
         return img;
     }
 
+    // usado também pelo PainelControles para o indicador do jogador da vez
     static Color converterCor(String cor) {
         switch (cor) {
             case "vermelho": return Color.RED;
@@ -126,31 +228,16 @@ class PainelTabuleiro extends JPanel {
         }
     }
 
-    private int paradaEm(int x, int y) {
-        int maisProxima = -1;
-        double menorDistancia = RAIO;
-        for (Integer id : coordenadas.keySet()) {
-            double d = coordenadas.get(id).distance(x, y);
-            if (d <= menorDistancia) {
-                menorDistancia = d;
-                maisProxima = id;
-            }
-        }
-        return maisProxima;
-    }
+    // ---------- MEDIÇÃO (temporário) ----------
 
-    private class TratadorClique extends MouseAdapter {
+    // imprime a coordenada já convertida para pixels da imagem original
+    private class MedidorClique extends MouseAdapter {
         @Override
         public void mouseClicked(MouseEvent e) {
-            if (MODO_MEDICAO) {
-                System.out.println("coordenadas.put(" + proximoId + ", new Point("
-                        + e.getX() + ", " + e.getY() + "));");
-                proximoId++;
-                return;
-            }
-            int id = paradaEm(e.getX(), e.getY());
-            if (id != -1)
-                controlador.cliqueNaParada(id);
+            int x = (int) Math.round(e.getX() / escala);
+            int y = (int) Math.round(e.getY() / escala);
+            System.out.println("coordenadas.put(" + proximoId + ", new Point(" + x + ", " + y + "));");
+            proximoId++;
         }
     }
 }

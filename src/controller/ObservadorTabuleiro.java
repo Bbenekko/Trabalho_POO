@@ -1,43 +1,36 @@
 package controller;
 
-import model.ModelFacade;
-import view.JanelaJogo;
-
-import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-class ObservadorTabuleiro extends MouseAdapter 
-{
-    private ModelFacade model;
-    private JanelaJogo view;
+import model.ModelFacade;
+import view.JanelaJogo;
+import view.PainelTabuleiro;
 
-    ObservadorTabuleiro(JanelaJogo view) {
-        this.model = ModelFacade.getInstancia();
+// Trata os cliques no mapa: transforma o (x, y) numa parada e pede o movimento ao Model
+class ObservadorTabuleiro extends MouseAdapter {
+    private JanelaJogo view;
+    private ModelFacade modelo;
+
+    ObservadorTabuleiro(JanelaJogo view, ModelFacade modelo) {
         this.view = view;
+        this.modelo = modelo;
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        Point pontoClique = e.getPoint();
-        
-        // Identifica o ID da parada clicada através do método do painel
-        Integer idParadaDestino = view.getPainelTabuleiro().identificarParadaClicada(pontoClique);
-
-        // Se clicou fora de qualquer parada válida, simplesmente ignora
-        if (idParadaDestino == null) {
+        PainelTabuleiro painel = view.getPainelTabuleiro();
+        if (painel.emModoMedicao())            // medindo coordenadas: o clique não é jogada
             return;
-        }
 
-        // Descobre se é o peão 0 ou 1 (caso da Altani)
-        int indicePeao = view.getPeaoSelecionado();
+        int id = painel.paradaEm(e.getX(), e.getY());
+        if (id == -1)                          // clique fora de qualquer parada: nada acontece
+            return;
 
-        // Tenta realizar o movimento na fachada
-        boolean sucesso = model.moverPeao(indicePeao, idParadaDestino);
-
-        // Se o movimento for válido, redesenha a tela
-        if (sucesso) {
-            view.repaint();
-        }
+        // peao 0: a Altani, que tem 2, ainda precisa de um jeito de escolher qual move
+        if (modelo.mover(0, id))
+            view.atualizar();
+        else
+            view.mostrarAviso("Não é possível ir para a parada " + id);
     }
 }

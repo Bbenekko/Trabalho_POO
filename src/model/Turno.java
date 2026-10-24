@@ -2,6 +2,7 @@ package model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -51,43 +52,105 @@ class Turno {
 	}
 
 
+	// ---------- MOVER (p. 7 e 11) ----------
+
+	// caminho = paradas por onde o peao passa, sem a de partida; a ultima e o destino
 	boolean podeMover(Peao peao, List<Parada> caminho) {
-		List<Parada> pagas = this.paradasPagas(peao, caminho);
-		if (pagas == null || pagas.size() > this.movimentosRestantes)
+		if (peao.getDono() != this.jogador || caminho.isEmpty() || caminho.contains(null))
 			return false;
-		return caminho.get(caminho.size() - 1).podeTerminarAqui(peao);
+		int custo = this.custoDoCaminho(peao, caminho);
+		if (custo < 0 || custo > this.movimentosRestantes)
+			return false;
+		Parada destino = caminho.get(caminho.size() - 1);
+		return destino.podeTerminarAqui(peao);         // pode passar por ocupada, nao terminar
 	}
 
 	boolean mover(Peao peao, List<Parada> caminho) {
 		if (!this.podeMover(peao, caminho))
 			return false;
 
-		List<Parada> novasVisitadas = this.paradasPagas(peao, caminho);
-		peao.moverPara(caminho.get(caminho.size() - 1));
-		this.movimentosRestantes -= novasVisitadas.size();
+		List<Parada> novasVisitadas = new ArrayList<Parada>();
+		for (int i = 0; i < caminho.size(); i++) {
+			Parada p = caminho.get(i);
+			boolean ultima = (i == caminho.size() - 1);
+			if (ultima || !p.temYurtDe(this.jogador))   // p. 11: yurt proprio pulado nao conta como visitada
+				novasVisitadas.add(p);
+		}
+
+		Parada destino = caminho.get(caminho.size() - 1);
+		this.movimentosRestantes -= this.custoDoCaminho(peao, caminho);
+		peao.moverPara(destino);
 		this.paradasVisitadas.get(peao).addAll(novasVisitadas);
 		return true;
 	}
 
-	// paradas do caminho que custam movimento (passar por yurt proprio e gratis); null se o caminho e invalido
-	private List<Parada> paradasPagas(Peao peao, List<Parada> caminho) {
-		if (peao.getDono() != this.jogador || caminho.isEmpty())
+	// caminho mais barato da posicao do peao ate o destino, ou null se nao houver;
+	// usado pelo clique, que so informa o destino. Busca em largura 0-1:
+	// pular yurt proprio custa 0, qualquer outra parada custa 1, e o destino sempre custa 1.
+	// Nao confere movimentos nem vaga: isso e feito pelo podeMover/mover.
+	List<Parada> caminhoAte(Peao peao, Parada destino) {
+		Parada origem = peao.getPosicao();
+		if (destino == null || destino == origem)
 			return null;
 
-		Parada anterior = peao.getPosicao();
-		List<Parada> pagas = new ArrayList<Parada>();
-		for (int i = 0; i < caminho.size(); i++) {
-			Parada p = caminho.get(i);
-			if (p == null || !this.tabuleiro.saoAdjacentes(anterior, p))
-				return null;
-			boolean ultima = (i == caminho.size() - 1);
-			if (ultima || !p.temYurtDe(this.jogador))
-				pagas.add(p);
-			anterior = p;
+		Map<Parada, Integer> custo = new HashMap<Parada, Integer>();
+		Map<Parada, Parada> veioDe = new HashMap<Parada, Parada>();
+		LinkedList<Parada> fila = new LinkedList<Parada>();
+		custo.put(origem, 0);
+		fila.add(origem);
+
+		while (!fila.isEmpty()) {
+			Parada u = fila.removeFirst();
+			for (Parada v : u.getVizinhas()) {
+				if (v == destino || v == origem || !this.tabuleiro.saoAdjacentes(u, v))
+					continue;                              // o destino e tratado no fim
+				int passo = v.temYurtDe(this.jogador) ? 0 : 1;
+				int novo = custo.get(u) + passo;
+				if (!custo.containsKey(v) || novo < custo.get(v)) {
+					custo.put(v, novo);
+					veioDe.put(v, u);
+					if (passo == 0)
+						fila.addFirst(v);
+					else
+						fila.addLast(v);
+				}
+			}
 		}
-		return pagas;
+
+		// ultima parada antes do destino: a vizinha alcancada com menor custo
+		Parada penultima = null;
+		for (Parada u : destino.getVizinhas()) {
+			if (custo.containsKey(u) && this.tabuleiro.saoAdjacentes(u, destino)
+					&& (penultima == null || custo.get(u) < custo.get(penultima)))
+				penultima = u;
+		}
+		if (penultima == null)
+			return null;
+
+		LinkedList<Parada> caminho = new LinkedList<Parada>();
+		caminho.add(destino);
+		for (Parada p = penultima; p != origem; p = veioDe.get(p))
+			caminho.addFirst(p);
+		return caminho;
 	}
 
+	// movimentos gastos no caminho, ou -1 se dois passos seguidos nao forem adjacentes
+	private int custoDoCaminho(Peao peao, List<Parada> caminho) {
+		Parada anterior = peao.getPosicao();
+		int custo = 0;
+		for (int i = 0; i < caminho.size(); i++) {
+			Parada p = caminho.get(i);
+			if (!this.tabuleiro.saoAdjacentes(anterior, p))
+				return -1;
+			boolean ultima = (i == caminho.size() - 1);
+			if (ultima || !p.temYurtDe(this.jogador))   // p. 11: pular yurt proprio nao gasta movimento
+				custo++;
+			anterior = p;
+		}
+		return custo;
+	}
+
+	// ---------- PEGAR TRIBUTO (p. 8) ----------
 
 	boolean pegarTributo(Provincia p) {
 		if (this.tributosRestantes == 0)
