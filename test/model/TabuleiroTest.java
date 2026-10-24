@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
-// Sempre há 3 cidades disponíveis para ataque (manual, p. 5 e 10)
 public class TabuleiroTest {
 	private static final int TIMEOUT = 2000;
 	private Tabuleiro tabuleiro;

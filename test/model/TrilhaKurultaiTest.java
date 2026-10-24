@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
-// Gatilho de fim de jogo na trilha do Kurultai (manual, p. 14)
 public class TrilhaKurultaiTest {
 	private static final int TIMEOUT = 2000;
 	private TrilhaKurultai trilha;

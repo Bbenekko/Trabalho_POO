@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
-// Ativação de colunas e linha completa de melhorias (manual, p. 6, 9, 12 e 20)
 public class TabuleiroJogadorTest {
 	private static final int TIMEOUT = 2000;
 	private static final int AMARELA = 0, VERDE = 1, VERMELHA = 2, BRANCA = 3;

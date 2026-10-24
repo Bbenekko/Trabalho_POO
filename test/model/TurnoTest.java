@@ -9,7 +9,6 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
-// Ações do turno: mover, pegar tributo e atacar cidades (manual, p. 7, 8 e 10)
 public class TurnoTest {
 	private static final int TIMEOUT = 2000;
 	private static final int NUMERO_DO_TURNO = 1;
