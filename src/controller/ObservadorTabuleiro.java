@@ -7,7 +7,6 @@ import model.ModelFacade;
 import view.JanelaJogo;
 import view.PainelTabuleiro;
 
-// Trata os cliques no mapa: transforma o (x, y) numa parada e pede o movimento ao Model
 class ObservadorTabuleiro extends MouseAdapter {
     private JanelaJogo view;
     private ModelFacade modelo;
@@ -20,14 +19,13 @@ class ObservadorTabuleiro extends MouseAdapter {
     @Override
     public void mouseClicked(MouseEvent e) {
         PainelTabuleiro painel = view.getPainelTabuleiro();
-        if (painel.emModoMedicao())            // medindo coordenadas: o clique não é jogada
+        if (painel.emModoMedicao())           
             return;
 
         int id = painel.paradaEm(e.getX(), e.getY());
-        if (id == -1)                          // clique fora de qualquer parada: nada acontece
+        if (id == -1)                         
             return;
 
-        // peao 0: a Altani, que tem 2, ainda precisa de um jeito de escolher qual move
         if (modelo.mover(0, id))
             view.atualizar();
         else

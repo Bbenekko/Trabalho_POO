@@ -7,7 +7,7 @@ import model.ModelFacade;
 
 class PainelControles extends JPanel {
     private static final int LARGURA = 250;
-    private static final int ALTURA = 300;           // mínima; a altura real acompanha o mapa
+    private static final int ALTURA = 300;          
     private static final int ALTURA_INDICADOR = 50;
     private static final int MARGEM = 15;
 
@@ -17,7 +17,7 @@ class PainelControles extends JPanel {
     private JComboBox<String> colunas = new JComboBox<String>();
     private JButton ativar = new JButton("Ativar coluna");
     private JButton encerrar = new JButton("Encerrar turno");
-    private JLabel lblAviso = new JLabel(" ");       // " " para não ter altura zero
+    private JLabel lblAviso = new JLabel(" ");     
 
     PainelControles(ModelFacade modelo) {
         this.modelo = modelo;
@@ -28,13 +28,10 @@ class PainelControles extends JPanel {
         for (int i = 1; i <= 4; i++)
             colunas.addItem("Coluna " + i);
 
-        // os listeners dos botões são registrados pelo Controller (ObservadorAcoes)
-
         lblJogador.setFont(new Font("SansSerif", Font.BOLD, 16));
         lblAviso.setForeground(Color.RED);
-        colunas.setMaximumSize(new Dimension(LARGURA, 30));   // não esticar no BoxLayout
+        colunas.setMaximumSize(new Dimension(LARGURA, 30));  
 
-        // espaço vazio no topo, onde o paintComponent pinta a cor do jogador
         add(Box.createRigidArea(new Dimension(0, ALTURA_INDICADOR + 10)));
         adicionar(lblJogador);
         adicionar(lblMovimentos);
@@ -50,13 +47,11 @@ class PainelControles extends JPanel {
         atualizar();
     }
 
-    // no BoxLayout, todos precisam do mesmo alinhamento para ficarem na mesma margem
     private void adicionar(JComponent comp) {
         comp.setAlignmentX(Component.LEFT_ALIGNMENT);
         add(comp);
     }
 
-    // ---------- usados pela JanelaJogo ----------
 
     JButton getBtnAtivar() {
         return ativar;
@@ -85,7 +80,6 @@ class PainelControles extends JPanel {
         lblAviso.setText(" ");
     }
 
-    // indicador obrigatório: retângulo na cor do jogador da vez
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);

@@ -13,7 +13,6 @@ public class ControladorJogo {
         this.view = view;
         this.modelo = modelo;
 
-        // Instancia os observadores especializados
         this.observadorTabuleiro = new ObservadorTabuleiro(view, modelo);
         this.observadorAcoes = new ObservadorAcoes(view, modelo);
 
@@ -21,10 +20,8 @@ public class ControladorJogo {
     }
 
     private void registrarListeners() {
-        // Vincula o listener de clique no painel do tabuleiro
         this.view.getPainelTabuleiro().addMouseListener(this.observadorTabuleiro);
 
-        // Configura comandos de ação e vincula aos botões Swing
         this.view.getBtnAtivarColuna().setActionCommand(ObservadorAcoes.ATIVAR_COLUNA);
         this.view.getBtnAtivarColuna().addActionListener(this.observadorAcoes);
 
@@ -33,12 +30,11 @@ public class ControladorJogo {
     }
 
     public static void main(String[] args) {
-        // Inicialização padrão da janela Swing sem uso de expressões lambda
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 ModelFacade modelo = ModelFacade.getInstance();
-                modelo.novoJogo(2);              // antes da janela: os paineis leem o jogo ao serem criados
+                modelo.novoJogo(2);             
                 JanelaJogo janela = new JanelaJogo(modelo);
                 new ControladorJogo(janela, modelo);
                 janela.setVisible(true);

@@ -10,33 +10,28 @@ import java.util.Map;
 import model.ModelFacade;
 
 public class PainelTabuleiro extends JPanel {
-    // tamanho original de doc/img/tabuleiro.jpg; as coordenadas das paradas usam estes pixels
     private static final int LARGURA_IMAGEM = 2905;
     private static final int ALTURA_IMAGEM = 2919;
 
-    // limites do enunciado (janela de no máximo 1400 x 1050) descontando a lateral e a barra de título
     private static final int LARGURA_MAXIMA = 1150;
     private static final int ALTURA_MAXIMA = 1000;
     private static final int LARGURA_LATERAL = 250;
     private static final int BARRA_DE_TITULO = 40;
 
-    // em pixels da imagem original; na tela, ficam proporcionais ao tamanho do mapa
-    private static final int RAIO_IMAGEM = 75;      // tolerância do clique
-    private static final int PEAO_IMAGEM = 90;      // tamanho do peão
+    private static final int RAIO_IMAGEM = 75;
+    private static final int PEAO_IMAGEM = 90;
 
-    // true: clique imprime coordenadas e mostra as paradas medidas
-    // false: jogo normal (deixe false na entrega)
     private static final boolean MODO_MEDICAO = false;
 
     private ModelFacade modelo;
-    private double escala;                          // pixels da tela por pixel da imagem
+    private double escala;
     private int largura;
     private int altura;
     private int tamPeao;
     private Image imgTabuleiro;
-    private Map<Integer, Point> coordenadas = new HashMap<Integer, Point>();   // em pixels da imagem
+    private Map<Integer, Point> coordenadas = new HashMap<Integer, Point>();
     private Map<String, Image> imgPeoes = new HashMap<String, Image>();
-    private int proximoId = 0;                      // só usado no modo de medição
+    private int proximoId = 0; 
 
     PainelTabuleiro(ModelFacade modelo) {
         this.modelo = modelo;
@@ -45,16 +40,10 @@ public class PainelTabuleiro extends JPanel {
         carregarCoordenadas();
         setPreferredSize(new Dimension(largura, altura));
 
-        // o clique de jogo é registrado pelo Controller (ObservadorTabuleiro);
-        // este listener só existe para medir as coordenadas
         if (MODO_MEDICAO)
             addMouseListener(new MedidorClique());
     }
 
-    // ---------- TAMANHO ----------
-
-    // o maior tamanho que cabe na tela deste computador (sem a barra de tarefas)
-    // e nos limites do enunciado, mantendo a proporção da imagem
     private void calcularTamanho() {
         Rectangle tela = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
         int larguraDisponivel = Math.min(LARGURA_MAXIMA, tela.width - LARGURA_LATERAL);
@@ -67,22 +56,16 @@ public class PainelTabuleiro extends JPanel {
         tamPeao = Math.max(16, (int) (PEAO_IMAGEM * escala));
     }
 
-    // posição de uma parada na tela
     private Point naTela(Point naImagem) {
         return new Point((int) (naImagem.x * escala), (int) (naImagem.y * escala));
     }
 
-    // ---------- CARREGAMENTO ----------
-
-    // reduz a imagem uma vez só; redimensionar a cada repaint deixa o jogo lento
     private void carregarImagens() {
         Image original = Imagens.carregar("doc/img/tabuleiro.jpg");
         if (original != null)
             imgTabuleiro = original.getScaledInstance(largura, altura, Image.SCALE_SMOOTH);
     }
 
-    // cole aqui as 34 linhas impressas no Console pelo modo de medição
-    // (as coordenadas são da imagem original, então valem para qualquer tamanho de tela)
     private void carregarCoordenadas() {
     	coordenadas.put(0, new Point(128, 542));
     	coordenadas.put(1, new Point(470, 542));
@@ -120,13 +103,10 @@ public class PainelTabuleiro extends JPanel {
     	coordenadas.put(33, new Point(1448, 1264));
     }
 
-    // ---------- USADOS PELO CONTROLLER ----------
-
     public boolean emModoMedicao() {
         return MODO_MEDICAO;
     }
 
-    // id da parada mais próxima do clique, se estiver dentro do raio; senão -1
     public int paradaEm(int x, int y) {
         int maisProxima = -1;
         double menorDistancia = RAIO_IMAGEM * escala;
@@ -140,8 +120,6 @@ public class PainelTabuleiro extends JPanel {
         return maisProxima;
     }
 
-    // ---------- DESENHO ----------
-
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -154,7 +132,6 @@ public class PainelTabuleiro extends JPanel {
     }
 
     private void desenharPeoes(Graphics2D g2) {
-        // quantos peões já foram desenhados em cada parada, para pô-los lado a lado
         Map<Integer, Integer> naParada = new HashMap<Integer, Integer>();
 
         for (int j = 0; j < modelo.numeroDeJogadores(); j++) {
@@ -162,14 +139,13 @@ public class PainelTabuleiro extends JPanel {
 
             for (int p = 0; p < modelo.numeroDePeoes(j); p++) {
                 int id = modelo.posicaoDoPeao(j, p);
-                if (!coordenadas.containsKey(id))   // parada ainda não medida
+                if (!coordenadas.containsKey(id))  
                     continue;
                 Point base = naTela(coordenadas.get(id));
 
                 int n = naParada.getOrDefault(id, 0);
                 naParada.put(id, n + 1);
 
-                // até 3 por linha, deslocados a partir do centro da parada
                 int dx = (n % 3 - 1) * (tamPeao * 2 / 3);
                 int dy = (n / 3) * (tamPeao * 2 / 3);
                 int x = base.x + dx - tamPeao / 2;
@@ -179,7 +155,6 @@ public class PainelTabuleiro extends JPanel {
         }
     }
 
-    // bolinhas vermelhas com o id, para conferir as coordenadas
     private void desenharParadasMedidas(Graphics2D g2) {
         g2.setColor(Color.RED);
         for (Integer id : coordenadas.keySet()) {
@@ -189,9 +164,6 @@ public class PainelTabuleiro extends JPanel {
         }
     }
 
-    // ---------- IMAGENS DOS PEÕES ----------
-
-    // cria a imagem de cada cor na primeira vez e reaproveita depois
     private Image imagemDoPeao(String cor) {
         Image img = imgPeoes.get(cor);
         if (img == null) {
@@ -214,7 +186,6 @@ public class PainelTabuleiro extends JPanel {
         return img;
     }
 
-    // usado também pelo PainelControles para o indicador do jogador da vez
     static Color converterCor(String cor) {
         switch (cor) {
             case "vermelho": return Color.RED;
@@ -228,9 +199,6 @@ public class PainelTabuleiro extends JPanel {
         }
     }
 
-    // ---------- MEDIÇÃO (temporário) ----------
-
-    // imprime a coordenada já convertida para pixels da imagem original
     private class MedidorClique extends MouseAdapter {
         @Override
         public void mouseClicked(MouseEvent e) {

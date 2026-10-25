@@ -3,10 +3,6 @@ package model;
 import java.util.ArrayList;
 import java.util.List;
 
-// Unica classe publica do model: View e Controller so falam com o jogo por aqui.
-// Recebe e devolve apenas tipos simples (int, boolean, String e listas deles).
-// Jogadores sao identificados pelo indice na ordem de jogo (0..n-1), peoes pelo indice no jogador,
-// paradas e provincias pelo id do Tabuleiro, cidades pelo nome e enums pelo nome da constante.
 public class ModelFacade {
 	private static ModelFacade instancia = null;
 	private Jogo jogo = null;
@@ -20,8 +16,6 @@ public class ModelFacade {
 		return instancia;
 	}
 
-	// ===================== PARTIDA =====================
-
 	public void novoJogo(List<String> cores, List<String> herdeiros) {
 		List<Cor> c = new ArrayList<Cor>();
 		for (String nome : cores)
@@ -32,7 +26,6 @@ public class ModelFacade {
 		this.jogo = new Jogo(c, h);
 	}
 
-	// usa as primeiras cores e herdeiros, na ordem dos enums
 	public void novoJogo(int numJogadores) {
 		if (numJogadores < 2 || numJogadores > 5)
 			throw new IllegalArgumentException("O jogo e para 2 a 5 jogadores: " + numJogadores);
@@ -65,8 +58,6 @@ public class ModelFacade {
 		return this.indiceDe(this.jogo().jogadorDaVez());
 	}
 
-	// ===================== ACOES DO TURNO =====================
-
 	public boolean ativarColuna(int coluna) {
 		return this.jogo().iniciarTurno(coluna);
 	}
@@ -75,7 +66,6 @@ public class ModelFacade {
 		return this.jogo().getTurnoAtual() != null;
 	}
 
-	// clique no mapa: so o destino; o Turno procura o caminho mais barato
 	public boolean podeMover(int peao, int idParada) {
 		List<Parada> caminho = this.caminhoAte(peao, idParada);
 		return caminho != null && this.jogo().getTurnoAtual().podeMover(this.peaoDaVez(peao), caminho);
@@ -86,7 +76,6 @@ public class ModelFacade {
 		return caminho != null && this.jogo().getTurnoAtual().mover(this.peaoDaVez(peao), caminho);
 	}
 
-	// caminho escolhido parada a parada (sem a de partida; a ultima e o destino)
 	public boolean podeMover(int peao, List<Integer> caminho) {
 		Turno turno = this.jogo().getTurnoAtual();
 		Peao p = this.peaoDaVez(peao);
@@ -137,7 +126,6 @@ public class ModelFacade {
 		return turno.atacar(c, t);
 	}
 
-	// espadas que o proximo ataque a esta cidade custaria no turno atual
 	public int custoAtaque(String nomeCidade) {
 		Turno turno = this.jogo().getTurnoAtual();
 		Cidade c = this.tabuleiro().getCidade(nomeCidade);
@@ -185,8 +173,6 @@ public class ModelFacade {
 		return turno != null && turno.isKhanUsado();
 	}
 
-	// ===================== JOGADORES =====================
-
 	public String corDoJogador(int jogador) {
 		return this.jogador(jogador).getCor().name();
 	}
@@ -230,9 +216,7 @@ public class ModelFacade {
 	public List<String> melhoriasDaColuna(int jogador, int coluna) {
 		return descrever(this.jogador(jogador).getTabuleiro().getColuna(coluna).getMelhorias());
 	}
-
-	// ===================== TABULEIRO =====================
-
+	
 	public List<String> cidadesReveladas() {
 		List<String> nomes = new ArrayList<String>();
 		for (Cidade c : this.tabuleiro().cidadesReveladas())
@@ -247,7 +231,6 @@ public class ModelFacade {
 		return tesouros;
 	}
 
-	// indice do jogador que conquistou a cidade, ou -1
 	public int conquistadorDaCidade(String nomeCidade) {
 		Jogador j = this.cidade(nomeCidade).getConquistador();
 		return (j == null) ? -1 : this.indiceDe(j);
@@ -261,7 +244,6 @@ public class ModelFacade {
 		return this.provincia(idProvincia).getTipoTributo().name();
 	}
 
-	// indices dos jogadores com yurt na parada (um por yurt)
 	public List<Integer> yurtsNaParada(int idParada) {
 		List<Integer> donos = new ArrayList<Integer>();
 		for (Jogador j : this.parada(idParada).getYurts())
@@ -269,7 +251,6 @@ public class ModelFacade {
 		return donos;
 	}
 
-	// id da provincia onde esta o Khan, ou -1 se ele esta fora do mapa
 	public int provinciaDoKhan() {
 		Provincia p = this.tabuleiro().getKhan().getProvincia();
 		return (p == null) ? -1 : p.getId();
@@ -290,8 +271,6 @@ public class ModelFacade {
 	public int limiteKurultai() {
 		return this.tabuleiro().getTrilha().getLimite();
 	}
-
-	// ===================== AUXILIARES =====================
 
 	private Jogo jogo() {
 		if (this.jogo == null)
@@ -339,7 +318,6 @@ public class ModelFacade {
 		return p;
 	}
 
-	// null se algum id nao existir
 	private List<Parada> paradas(List<Integer> ids) {
 		List<Parada> caminho = new ArrayList<Parada>();
 		for (int id : ids) {
@@ -351,7 +329,6 @@ public class ModelFacade {
 		return caminho;
 	}
 
-	// caminho mais barato do peao da vez ate a parada, ou null (sem turno, peao ou parada invalidos)
 	private List<Parada> caminhoAte(int peao, int idParada) {
 		Turno turno = this.jogo().getTurnoAtual();
 		Peao p = this.peaoDaVez(peao);
@@ -361,7 +338,6 @@ public class ModelFacade {
 		return turno.caminhoAte(p, destino);
 	}
 
-	// "tipo:regiao" ou "tesouro_virtual:regiao:tesouro"
 	private static List<String> descrever(List<Melhoria> melhorias) {
 		List<String> descricoes = new ArrayList<String>();
 		for (Melhoria m : melhorias) {
