@@ -1,6 +1,7 @@
 package model;
 
-enum TipoConselheiroSecreto 
-{
-	viajante, soldado, colecionador, sacerdote, governador, bojulador, prefeito, cidadao, cavaleiro, mesageiro
+// p. 19: as 10 cartas de conselheiro secreto
+enum TipoConselheiroSecreto {
+	viajante, soldado, colecionador, sacerdote, governador,
+	bajulador, prefeito, cidadao, cavaleiro, mensageiro
 }

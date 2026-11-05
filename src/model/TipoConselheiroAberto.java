@@ -1,8 +1,8 @@
 package model;
 
-enum TipoConselheiroAberto 
-{
-	quatro_espadas, seis_yurts, dez_yurts, quatro_tesouros, cinco_tesouros_diferentes, um_yurt_em_cada, 
-	dois_yurts_em_cada, dois_peca_bonus, tres_peca_bonus, dois_cidades, tres_cidade, uma_linha_completa,
-	dois_coluna_dois_melhorias, um_coluna_quatro_melhorias
+// p. 18: as 14 cartas de conselheiro aberto
+enum TipoConselheiroAberto {
+	quatro_espadas, seis_yurts, dez_yurts, quatro_tesouros, cinco_tesouros_diferentes,
+	um_yurt_cada_regiao, dois_yurts_cada_regiao, duas_pecas_bonus, tres_pecas_bonus,
+	duas_cidades, tres_cidades, linha_de_melhorias, duas_colunas_com_duas, quatro_melhorias_numa_coluna
 }

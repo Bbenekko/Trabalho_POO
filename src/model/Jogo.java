@@ -2,7 +2,9 @@ package model;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 class Jogo {
 	private List<Jogador> jogadores = new ArrayList<Jogador>();
@@ -13,6 +15,7 @@ class Jogo {
 	private boolean fimDisparado = false;
 	private boolean ultimaRodada = false;
 	private boolean encerrado = false;
+	private Map<Jogador, List<CartaConselheiroSecreto>> opcoesSecretas = new HashMap<Jogador, List<CartaConselheiroSecreto>>();
 
 	Jogo(List<Cor> cores, List<Herdeiro> herdeiros) {
 		if (cores.size() != herdeiros.size())
@@ -28,6 +31,7 @@ class Jogo {
 
 		this.tabuleiro = new Tabuleiro(cores.size());
 		this.preparar();
+		this.distribuirCartasSecretas();
 	}
 
 	private void preparar() {
@@ -106,6 +110,10 @@ class Jogo {
 			return false;                        
 		this.turnoAtual = null;
 
+		// p. 13: cartas de conselheiro aberto cumpridas neste turno dao 1 voto
+		for (CartaConselheiroAberto carta : this.tabuleiro.getCartasAbertas())
+			carta.verificar(this.jogadorDaVez(), this.tabuleiro);
+
 		if (!this.fimDisparado
 				&& (this.tabuleiro.getTrilha().fimDisparado() || this.tabuleiro.todasCidadesConquistadas()))
 			this.fimDisparado = true;
@@ -119,5 +127,55 @@ class Jogo {
 				this.ultimaRodada = true;        
 		}
 		return true;
+	}
+
+	// p. 19: cada jogador recebe 2 cartas secretas e escolhe 1 para manter
+	private void distribuirCartasSecretas() {
+		List<TipoConselheiroSecreto> tipos = new ArrayList<TipoConselheiroSecreto>();
+		for (TipoConselheiroSecreto tipo : TipoConselheiroSecreto.values())
+			tipos.add(tipo);
+		Collections.shuffle(tipos);
+		int proxima = 0;
+		for (Jogador j : this.jogadores) {
+			List<CartaConselheiroSecreto> duas = new ArrayList<CartaConselheiroSecreto>();
+			duas.add(new CartaConselheiroSecreto(tipos.get(proxima++)));
+			duas.add(new CartaConselheiroSecreto(tipos.get(proxima++)));
+			this.opcoesSecretas.put(j, duas);
+		}
+	}
+
+	List<CartaConselheiroSecreto> opcoesSecretas(Jogador j) {
+		return Collections.unmodifiableList(this.opcoesSecretas.get(j));
+	}
+
+	boolean escolherCartaSecreta(Jogador j, int opcao) {
+		if (j.getCartaSecreta() != null || opcao < 0 || opcao > 1)
+			return false;
+		j.escolherCartaSecreta(this.opcoesSecretas.get(j).get(opcao));
+		return true;
+	}
+
+	// p. 16: votos da trilha do Kurultai + votos da carta secreta
+	int pontuacaoFinal(Jogador j) {
+		int total = this.tabuleiro.getTrilha().votosDe(j);
+		if (j.getCartaSecreta() != null)
+			total += j.getCartaSecreta().votos(j, this.tabuleiro);
+		return total;
+	}
+
+	// jogadores com a maior pontuacao (mais de um em caso de empate)
+	List<Jogador> vencedores() {
+		List<Jogador> melhores = new ArrayList<Jogador>();
+		int maior = -1;
+		for (Jogador j : this.jogadores) {
+			int pontos = this.pontuacaoFinal(j);
+			if (pontos > maior) {
+				maior = pontos;
+				melhores.clear();
+			}
+			if (pontos == maior)
+				melhores.add(j);
+		}
+		return melhores;
 	}
 }

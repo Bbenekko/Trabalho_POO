@@ -256,6 +256,27 @@ class Turno {
 		return true;
 	}
 
+	// p. 12: cada linha completa das 3 colunas coloridas da 1 melhoria gratis, que vai para a coluna branca.
+	// A coluna branca guarda as ja recebidas, entao a proxima linha a premiar e o tamanho dela + 1.
+	boolean melhoriaGratisDisponivel() {
+		TabuleiroJogador tj = this.jogador.getTabuleiro();
+		int proximaLinha = tj.getColuna(3).getMelhorias().size() + 1;
+		return tj.linhaCompleta(proximaLinha);
+	}
+
+	// escolhe uma das melhorias expostas, sem pagar e sem conferir a regiao
+	boolean pegarMelhoriaGratis(int posicao) {
+		if (!this.melhoriaGratisDisponivel() || this.jogador.getTabuleiro().getColuna(3).estaCheia())
+			return false;
+		AreaMelhorias area = this.tabuleiro.getAreaMelhorias();
+		if (posicao < 0 || posicao >= area.getExpostas().size())
+			return false;
+		Melhoria m = area.comprar(posicao);
+		m.registrarCompra(this.numero);
+		this.jogador.getTabuleiro().adicionarMelhoria(m, 3);
+		return true;
+	}
+
 	boolean temMelhoriaGratis(int coluna) {
 		TabuleiroJogador tj = this.jogador.getTabuleiro();
 		int linha = tj.getColuna(coluna).getMelhorias().size();

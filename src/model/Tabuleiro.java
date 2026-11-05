@@ -1,6 +1,7 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +17,8 @@ class Tabuleiro {
 	private Khan khan;
 	private AreaMelhorias areaMelhorias;
 	private TrilhaKurultai trilha;
-	//private List<CartasConselheiroAberto> cartasAbertas = new ArrayList<CartasConselheiroAberto>();
+	private List<CartaConselheiroAberto> cartasAbertas = new ArrayList<CartaConselheiroAberto>();
+	private List<TipoPecaBonus> espacosBonus = new ArrayList<TipoPecaBonus>();   // null = espaço vazio
 	static final int KARAKORUM = 33;
 
 	
@@ -28,6 +30,8 @@ class Tabuleiro {
 		this.criarMapa();       
 		this.abastecerProvincias(); 
 		this.prepararCidades();   
+		this.prepararCartasAbertas();
+		this.prepararPecasBonus();
 	}
 	
 	private void criarMapa() {
@@ -501,5 +505,47 @@ class Tabuleiro {
 				return false;
 		}
 		return true;
+	}
+
+	// p. 13 e 18: 4 cartas de conselheiro aberto sorteadas no inicio
+	private void prepararCartasAbertas() {
+		List<TipoConselheiroAberto> tipos = new ArrayList<TipoConselheiroAberto>();
+		for (TipoConselheiroAberto tipo : TipoConselheiroAberto.values())
+			tipos.add(tipo);
+		Collections.shuffle(tipos);
+		for (int i = 0; i < 4; i++)
+			this.cartasAbertas.add(new CartaConselheiroAberto(tipos.get(i)));
+	}
+
+	List<CartaConselheiroAberto> getCartasAbertas() {
+		return Collections.unmodifiableList(this.cartasAbertas);
+	}
+
+	Collection<Parada> getParadas() {
+		return Collections.unmodifiableCollection(this.paradas.values());
+	}
+
+	Collection<Provincia> getProvincias() {
+		return Collections.unmodifiableCollection(this.provincias.values());
+	}
+
+	Collection<Cidade> getCidades() {
+		return Collections.unmodifiableCollection(this.cidades.values());
+	}
+
+	// uma peça de bônus de cada tipo, sorteada em cada um dos espaços de bônus
+	private void prepararPecasBonus() {
+		for (TipoPecaBonus tipo : TipoPecaBonus.values())
+			this.espacosBonus.add(tipo);
+		Collections.shuffle(this.espacosBonus);
+	}
+
+	int numeroDeEspacosBonus() {
+		return this.espacosBonus.size();
+	}
+
+	// peça no espaço, ou null se ela já foi pega
+	TipoPecaBonus pecaBonusNoEspaco(int espaco) {
+		return this.espacosBonus.get(espaco);
 	}
 }

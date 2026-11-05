@@ -16,7 +16,7 @@ class Jogador
 	private Map<TipoTesouro, Integer> tesouros = new HashMap<TipoTesouro, Integer>();
 	private int yurtsRestantes = 12;
 	//private List<PecaBonus> bonus = new ArrayList<PecaBonus>();   
-	//private CartaConselheiroSecreto cartaSecreta;                
+	private CartaConselheiroSecreto cartaSecreta = null;                
     
 	Jogador(Cor cor, Herdeiro herdeiro) {
 		this.cor = cor;
@@ -106,5 +106,14 @@ class Jogador
     
     TabuleiroJogador getTabuleiro() {
     	return this.tabuleiro;
+    }
+
+    // p. 19: a carta secreta escolhida no inicio
+    void escolherCartaSecreta(CartaConselheiroSecreto c) {
+        this.cartaSecreta = c;
+    }
+
+    CartaConselheiroSecreto getCartaSecreta() {
+        return this.cartaSecreta;
     }
 }
