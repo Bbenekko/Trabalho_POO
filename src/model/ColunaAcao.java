@@ -77,7 +77,7 @@ class ColunaAcao
 		return this.melhorias.size() >= 4;
 	}
 
-	boolean adicionaMelhoria(Melhoria melhoria) {   // p. 12
+	boolean adicionaMelhoria(Melhoria melhoria) {
 		if (this.estaCheia())
 			return false;
 		if (this.regiao != null && melhoria.getRegiao() != this.regiao)

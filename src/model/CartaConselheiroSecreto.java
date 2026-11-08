@@ -15,7 +15,6 @@ class CartaConselheiroSecreto extends CartaConselheiro {
 		return this.tipo;
 	}
 
-	// p. 19: os 3 valores que dao 1, 2 e 3 votos
 	int[] limiares() {
 		switch (this.tipo) {
 			case viajante:     return new int[] {3, 6, 8};
@@ -27,11 +26,10 @@ class CartaConselheiroSecreto extends CartaConselheiro {
 			case prefeito:     return new int[] {2, 3, 4};
 			case cidadao:      return new int[] {3, 6, 8};
 			case cavaleiro:    return new int[] {2, 4, 5};
-			default:           return new int[] {2, 4, 6};   // mensageiro
+			default:           return new int[] {2, 4, 6}; 
 		}
 	}
 
-	// p. 16: no fim do jogo, de 0 a 3 votos
 	int votos(Jogador j, Tabuleiro t) {
 		int valor = this.progresso(j, t);
 		int votos = 0;
@@ -54,11 +52,10 @@ class CartaConselheiroSecreto extends CartaConselheiro {
 			case prefeito:     return this.cidadesComYurtsAdjacentes(j, t, 2);
 			case cidadao:      return this.cidadesComYurtsAdjacentes(j, t, 1);
 			case cavaleiro:    return this.melhoriasDeCavaloOuPunho(j);
-			default:           return this.paradasDuplasComYurt(j, t);   // mensageiro
+			default:           return this.paradasDuplasComYurt(j, t);
 		}
 	}
 
-	// Viajante: maior grupo de yurts ligados por estradas (a rede pode ter ramificacoes)
 	private int maiorRedeDeYurts(Jogador j, Tabuleiro t) {
 		List<Parada> jaVistas = new ArrayList<Parada>();
 		int maior = 0;
@@ -84,7 +81,6 @@ class CartaConselheiroSecreto extends CartaConselheiro {
 		return maior;
 	}
 
-	// Sacerdote: cada 2 melhorias com o mesmo simbolo formam 1 par
 	private int paresDeSimbolos(Jogador j) {
 		int pares = 0;
 		Map<String, Integer> contagem = this.simbolos(j);
@@ -93,7 +89,6 @@ class CartaConselheiroSecreto extends CartaConselheiro {
 		return pares;
 	}
 
-	// Governador: regioes com 2+ yurts e 2+ melhorias na coluna da regiao
 	private int regioesGovernadas(Jogador j, Tabuleiro t) {
 		int n = 0;
 		for (Regiao r : Regiao.values()) {
@@ -103,7 +98,6 @@ class CartaConselheiroSecreto extends CartaConselheiro {
 		return n;
 	}
 
-	// Bajulador: provincias do Khan com 2+ yurts do jogador nas paradas em volta
 	private int provinciasDoKhanCom2Yurts(Jogador j, Tabuleiro t) {
 		int n = 0;
 		for (Provincia prov : t.getProvincias()) {
@@ -120,7 +114,6 @@ class CartaConselheiroSecreto extends CartaConselheiro {
 		return n;
 	}
 
-	// Prefeito (minimo 2) e Cidadao (minimo 1): yurts DENTRO da cidade nao contam
 	private int cidadesComYurtsAdjacentes(Jogador j, Tabuleiro t, int minimo) {
 		int n = 0;
 		for (Cidade c : t.getCidades()) {
@@ -135,7 +128,6 @@ class CartaConselheiroSecreto extends CartaConselheiro {
 		return n;
 	}
 
-	// Cavaleiro: melhorias com cavalo (dois movimentos) ou punho (pegar tributo)
 	private int melhoriasDeCavaloOuPunho(Jogador j) {
 		int n = 0;
 		for (Melhoria m : this.todasAsMelhorias(j)) {
@@ -145,7 +137,6 @@ class CartaConselheiroSecreto extends CartaConselheiro {
 		return n;
 	}
 
-	// Mensageiro: paradas duplas com pelo menos 1 yurt do jogador (Karakorum nao conta)
 	private int paradasDuplasComYurt(Jogador j, Tabuleiro t) {
 		int n = 0;
 		for (Parada p : t.getParadas()) {

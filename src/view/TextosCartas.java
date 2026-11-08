@@ -3,12 +3,10 @@ package view;
 import java.util.HashMap;
 import java.util.Map;
 
-// Título e linhas de texto de cada carta de conselheiro, pelo nome do enum (acesso em tempo constante).
 class TextosCartas {
     private static Map<String, String[]> textos = new HashMap<String, String[]>();
 
     static {
-        // abertas (p. 18): o primeiro a cumprir ganha 1 voto
         textos.put("quatro_espadas", new String[] {"4 espadas", "Ter 4 espadas", "1 voto"});
         textos.put("seis_yurts", new String[] {"6 yurts", "6 yurts no mapa", "1 voto"});
         textos.put("dez_yurts", new String[] {"10 yurts", "10 yurts no mapa", "1 voto"});
@@ -24,7 +22,6 @@ class TextosCartas {
         textos.put("duas_colunas_com_duas", new String[] {"Colunas", "2 colunas com", "2 melhorias", "1 voto"});
         textos.put("quatro_melhorias_numa_coluna", new String[] {"Coluna", "4 melhorias numa", "coluna", "1 voto"});
 
-        // secretas (p. 19): de 0 a 3 votos no fim do jogo
         textos.put("viajante", new String[] {"Viajante", "Maior rede de yurts", "3 / 6 / 8"});
         textos.put("soldado", new String[] {"Soldado", "Melhorias", "4 / 7 / 10"});
         textos.put("colecionador", new String[] {"Colecionador", "Símbolos diferentes", "4 / 6 / 7"});

@@ -14,20 +14,15 @@ import model.ModelFacade;
 import model.ObservadoIF;
 import model.ObservadorIF;
 
-// Mapa da partida. É um observador (Cap. 17): quando a fachada notifica, ele se redesenha
-// lendo o estado atual pela própria fachada.
 public class PainelTabuleiro extends JPanel implements ObservadorIF {
-    // tamanho original de doc/img/tabuleiro.jpg; as coordenadas usam estes pixels
     private static final int LARGURA_IMAGEM = 2905;
     private static final int ALTURA_IMAGEM = 2919;
 
-    // limites do enunciado (janela de no máximo 1400 x 1050) descontando a lateral e a barra de título
     private static final int LARGURA_MAXIMA = 1080;
     private static final int ALTURA_MAXIMA = 1000;
     private static final int LARGURA_LATERAL = PainelControles.LARGURA;
     private static final int BARRA_DE_TITULO = 40;
 
-    // tamanhos em pixels da imagem original; na tela ficam proporcionais ao mapa
     private static final int RAIO_PARADA = 75;
     private static final int RAIO_PROVINCIA = 170;
     private static final int RAIO_CIDADE = 190;
@@ -35,18 +30,16 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
     private static final int YURT_IMAGEM = 80;
     private static final int TRIBUTO_IMAGEM = 190;
     private static final int CIDADE_IMAGEM = 250;
-    private static final int TESOURO_IMAGEM = CIDADE_IMAGEM * 2 / 5;   // cabe num quadrante da cidade
+    private static final int TESOURO_IMAGEM = CIDADE_IMAGEM * 2 / 5;
     private static final int MELHORIA_IMAGEM = 200;
     private static final int RAIO_MELHORIA = 110;
-    private static final int MELHORIAS_EXPOSTAS = 5;                    // AreaMelhorias.repor() deixa 5
+    private static final int MELHORIAS_EXPOSTAS = 5; 
     private static final int BONUS_IMAGEM = 200;
 
-    // imagens dos tributos (ajuste os nomes aos arquivos do projeto)
     private static final String IMG_MOEDA = "doc/img/cartoes/cartoes6/cartoes6-3.png";
     private static final String IMG_ESPADA = "doc/img/cartoes/cartoes6/cartoes6-2.png";
     private static final String IMG_YURT = "doc/img/cartoes/cartoes6/cartoes6-1.png";
 
-    // imagens das cidades (ajuste os caminhos aos arquivos do projeto)
     private static final String IMG_KIEV = "doc/img/cartoes/cartoes2/cartoes2-4.jpg";
     private static final String IMG_MOSCOU = "doc/img/cartoes/cartoes2/cartoes2-5.jpg";
     private static final String IMG_SARAI = "doc/img/cartoes/cartoes2/cartoes2-6.jpg";
@@ -57,14 +50,12 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
     private static final String IMG_KAESONG = "doc/img/cartoes/cartoes2/cartoes2-8.jpg";
     private static final String IMG_CANTAO = "doc/img/cartoes/cartoes2/cartoes2-7.jpg";
 
-    // imagens dos tesouros (ajuste os caminhos; sem arquivo, usa o losango gerado)
     private static final String IMG_PELE = "doc/img/cartoes/cartoes7/cartoes7-4.png";
     private static final String IMG_TECIDO = "doc/img/cartoes/cartoes7/cartoes7-2.png";
     private static final String IMG_GADO = "doc/img/cartoes/cartoes7/cartoes7-1.png";
     private static final String IMG_FERRO = "doc/img/cartoes/cartoes7/cartoes7-3.png";
     private static final String IMG_ESPECIARIAS = "doc/img/cartoes/cartoes7/cartoes7-5.png";
 
-    // imagens das melhorias, uma por tipo e região (ajuste os caminhos; sem arquivo, usa a peça gerada)
     private static final String IMG_MELHORIA_TRIBUTO_RUSSIA = "doc/img/cartoes/cartoes1/MAO-A.jpg";
     private static final String IMG_MELHORIA_TRIBUTO_PERSIA = "doc/img/cartoes/cartoes1/MAO-V.jpg";
     private static final String IMG_MELHORIA_TRIBUTO_CHINA = "doc/img/cartoes/cartoes1/MAO-R.jpg";
@@ -81,14 +72,12 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
     private static final String IMG_MELHORIA_MOEDA_PERSIA = "doc/img/cartoes/cartoes1/MOE-V.jpg";
     private static final String IMG_MELHORIA_MOEDA_CHINA = "doc/img/cartoes/cartoes1/MOE-R.jpg";
     
-    // melhorias de tesouro virtual: uma para cada região e tesouro que existe no jogo
     private static final String IMG_MELHORIA_TESOURO_CHINA_FERRO = "doc/img/cartoes/cartoes1/MOB-R.jpg";
     private static final String IMG_MELHORIA_TESOURO_RUSSIA_GADO = "doc/img/cartoes/cartoes1/BOI-A.jpg";
     private static final String IMG_MELHORIA_TESOURO_RUSSIA_ESPECIARIAS = "doc/img/cartoes/cartoes1/CUI-A.jpg";
     private static final String IMG_MELHORIA_TESOURO_PERSIA_TECIDO = "doc/img/cartoes/cartoes1/PER-V.jpg";
     private static final String IMG_MELHORIA_TESOURO_PERSIA_PELE = "doc/img/cartoes/cartoes1/MOP-V.jpg";
 
-    // imagens das peças de bônus (ajuste os caminhos; sem arquivo, a peça não é desenhada)
     private static final String IMG_BONUS_CAVALOS = "doc/img/cartoes/cartoes3/cartoes3-1.jpg";   
     private static final String IMG_BONUS_VOTO = "doc/img/cartoes/cartoes3/cartoes3-2.jpg";        
     private static final String IMG_BONUS_YURTS = "doc/img/cartoes/cartoes3/cartoes3-3.jpg";       
@@ -97,7 +86,6 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
     private static final String IMG_BONUS_MAOS = "doc/img/cartoes/cartoes3/cartoes3-6.jpg";       
     private static final String IMG_BONUS_MOEDAS = "doc/img/cartoes/cartoes3/cartoes3-7.jpg";    
 
-    // o que o clique mede enquanto o jogo é preparado; deixe NADA na entrega
     private static final int NADA = 0;
     private static final int MEDIR_PARADAS = 1;
     private static final int MEDIR_KHAN = 2;
@@ -112,23 +100,23 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
     private int largura;
     private int altura;
     private Image imgTabuleiro;
-    private Map<Integer, Point> coordenadas = new HashMap<Integer, Point>();          // paradas
+    private Map<Integer, Point> coordenadas = new HashMap<Integer, Point>();
     private Map<Integer, Point> centrosProvincias = new HashMap<Integer, Point>();
     private Map<String, Point> centrosCidades = new HashMap<String, Point>();
-    private Map<Integer, Point> posicoesKhan = new HashMap<Integer, Point>();         // província do Khan
-    private Point posicaoKhanMelhorias = null;                                         // área de melhorias
-    private Map<String, Image> imgTributos = new HashMap<String, Image>();             // tipo → imagem
-    private Map<Integer, Point> posicoesTributos = new HashMap<Integer, Point>();     // província → tributos
-    private Map<String, Point> posicoesCidades = new HashMap<String, Point>();        // cidade → imagem
-    private Map<String, Image> imgCidades = new HashMap<String, Image>();               // nome → imagem
-    private Map<String, Image> imgTesouros = new HashMap<String, Image>();              // tipo → imagem
-    private Map<String, Image> imgMelhorias = new HashMap<String, Image>();             // "tipo:regiao[:tesouro]" → imagem
-    private Map<Integer, Point> posicoesMelhorias = new HashMap<Integer, Point>();     // espaço exposto → centro
-    private Map<String, Image> imgBonus = new HashMap<String, Image>();                 // tipo → imagem
-    private Map<Integer, Point> posicoesBonus = new HashMap<Integer, Point>();         // espaço de bônus → centro
-    private List<Integer> paraMedir = new ArrayList<Integer>();                        // só na medição
-    private List<String> cidadesParaMedir = new ArrayList<String>();                   // só na medição
-    private Map<String, Rectangle> areasDosPeoes = new HashMap<String, Rectangle>();  // "jogador:peao"
+    private Map<Integer, Point> posicoesKhan = new HashMap<Integer, Point>();
+    private Point posicaoKhanMelhorias = null;
+    private Map<String, Image> imgTributos = new HashMap<String, Image>();
+    private Map<Integer, Point> posicoesTributos = new HashMap<Integer, Point>();
+    private Map<String, Point> posicoesCidades = new HashMap<String, Point>();
+    private Map<String, Image> imgCidades = new HashMap<String, Image>();
+    private Map<String, Image> imgTesouros = new HashMap<String, Image>();
+    private Map<String, Image> imgMelhorias = new HashMap<String, Image>();
+    private Map<Integer, Point> posicoesMelhorias = new HashMap<Integer, Point>();
+    private Map<String, Image> imgBonus = new HashMap<String, Image>();
+    private Map<Integer, Point> posicoesBonus = new HashMap<Integer, Point>();
+    private List<Integer> paraMedir = new ArrayList<Integer>();
+    private List<String> cidadesParaMedir = new ArrayList<String>();
+    private Map<String, Rectangle> areasDosPeoes = new HashMap<String, Rectangle>();
     private List<String> ordemDosPeoes = new ArrayList<String>();
     private int jogadorSelecionado = -1;
     private int peaoSelecionado = -1;
@@ -152,7 +140,7 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
                 || MODO_MEDICAO == MEDIR_BONUS)
             prepararMedicao();
 
-        ControladorJogo.getInstance().registra(this);   // Cap. 17: registro pelo controlador
+        ControladorJogo.getInstance().registra(this);
     }
 
     // ---------- OBSERVER ----------
@@ -161,9 +149,9 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
     public void notify(ObservadoIF o) {
         int evento = o.get(ModelFacade.EVENTO);
         if (evento == ModelFacade.ABRIR_CARTELA || evento == ModelFacade.ABRIR_CARTAS)
-            return;                                     // não muda nada no mapa
+            return;
         if (evento == ModelFacade.ESTADO && !modelo.turnoEmAndamento())
-            selecionarPeao(-1, -1);                     // turno novo: ninguém selecionado
+            selecionarPeao(-1, -1);
         repaint();
     }
 
@@ -194,12 +182,10 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         if (original != null)
             imgTabuleiro = original.getScaledInstance(largura, altura, Image.SCALE_SMOOTH);
 
-        // tributos: carregados e reduzidos uma vez, guardados pelo nome do tipo
         carregarTributo("moeda", IMG_MOEDA);
         carregarTributo("espada", IMG_ESPADA);
         carregarTributo("yurt", IMG_YURT);
 
-        // cidades: guardadas pelo nome que a cidade tem no Model
         carregarCidade("Kiev", IMG_KIEV);
         carregarCidade("Moscou", IMG_MOSCOU);
         carregarCidade("Sarai", IMG_SARAI);
@@ -210,14 +196,12 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         carregarCidade("Kaesong", IMG_KAESONG);
         carregarCidade("Cantao", IMG_CANTAO);
 
-        // tesouros: guardados pelo nome do tipo
         carregarTesouro("pele", IMG_PELE);
         carregarTesouro("tecido", IMG_TECIDO);
         carregarTesouro("gado", IMG_GADO);
         carregarTesouro("ferro", IMG_FERRO);
         carregarTesouro("especiarias", IMG_ESPECIARIAS);
 
-        // melhorias: guardadas pela descrição que a fachada usa ("tipo:regiao" ou "tesouro_virtual:regiao:tesouro")
         carregarMelhoria("pegar_tributo:russia", IMG_MELHORIA_TRIBUTO_RUSSIA);
         carregarMelhoria("pegar_tributo:persia", IMG_MELHORIA_TRIBUTO_PERSIA);
         carregarMelhoria("pegar_tributo:china", IMG_MELHORIA_TRIBUTO_CHINA);
@@ -239,7 +223,6 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         carregarMelhoria("tesouro_virtual:persia:tecido", IMG_MELHORIA_TESOURO_PERSIA_TECIDO);
         carregarMelhoria("tesouro_virtual:persia:pele", IMG_MELHORIA_TESOURO_PERSIA_PELE);
 
-        // peças de bônus: guardadas pelo nome do tipo no Model
         carregarBonus("cavalos", IMG_BONUS_CAVALOS);
         carregarBonus("voto", IMG_BONUS_VOTO);
         carregarBonus("yurts", IMG_BONUS_YURTS);
@@ -250,33 +233,33 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
     }
 
     private void carregarBonus(String tipo, String caminho) {
-        Image original = Imagens.carregar(caminho);                  // avisa no Console se faltar
+        Image original = Imagens.carregar(caminho);
         if (original != null)
             imgBonus.put(tipo, reduzir(original, px(BONUS_IMAGEM)));
     }
 
     private void carregarMelhoria(String descricao, String caminho) {
         int t = px(MELHORIA_IMAGEM);
-        Image original = Imagens.carregar(caminho);                  // avisa no Console se faltar
+        Image original = Imagens.carregar(caminho); 
         if (original != null)
             imgMelhorias.put(descricao, reduzir(original, t));
         else
-            imgMelhorias.put(descricao, Desenhos.melhoria(descricao, t));   // sem arquivo, usa a peça gerada
+            imgMelhorias.put(descricao, Desenhos.melhoria(descricao, t));
     }
 
     private void carregarCidade(String nome, String caminho) {
         Image original = Imagens.carregar(caminho);
         if (original != null)
-            imgCidades.put(nome, reduzir(original, px(CIDADE_IMAGEM)));   // sem arquivo, não desenha
+            imgCidades.put(nome, reduzir(original, px(CIDADE_IMAGEM)));
     }
 
     private void carregarTesouro(String tipo, String caminho) {
         int t = px(TESOURO_IMAGEM);
-        Image original = Imagens.carregar(caminho);                  // avisa no Console se faltar
+        Image original = Imagens.carregar(caminho);
         if (original != null)
             imgTesouros.put(tipo, reduzir(original, t));
         else
-            imgTesouros.put(tipo, Desenhos.tesouro(tipo, t));          // sem arquivo, usa o losango gerado
+            imgTesouros.put(tipo, Desenhos.tesouro(tipo, t)); 
     }
 
     private void carregarTributo(String tipo, String caminho) {
@@ -285,10 +268,9 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         if (original != null)
             imgTributos.put(tipo, reduzir(original, t));
         else
-            imgTributos.put(tipo, Desenhos.tributo(tipo, t));   // sem arquivo, usa a ficha gerada
+            imgTributos.put(tipo, Desenhos.tributo(tipo, t)); 
     }
 
-    // reduz mantendo a proporção do arquivo: a maior medida fica com "tamanho" pixels
     private static Image reduzir(Image original, int tamanho) {
         int w = original.getWidth(null), h = original.getHeight(null);
         int lw = (w >= h) ? tamanho : tamanho * w / h;
@@ -296,17 +278,14 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         return original.getScaledInstance(lw, lh, Image.SCALE_SMOOTH);
     }
 
-    // onde o Khan fica em cada uma das 4 províncias do Khan e na área de melhorias,
-    // medidas com MODO_MEDICAO = MEDIR_KHAN, em pixels da imagem original
     private void carregarPosicoesKhan() {
-        posicoesKhan.put(0, new Point(628, 617));      // província a
-        posicoesKhan.put(4, new Point(1742, 922));     // província e
-        posicoesKhan.put(7, new Point(805, 1738));     // província h
-        posicoesKhan.put(10, new Point(2133, 2061));   // província k
+        posicoesKhan.put(0, new Point(628, 617));      
+        posicoesKhan.put(4, new Point(1742, 922));     
+        posicoesKhan.put(7, new Point(805, 1738));     
+        posicoesKhan.put(10, new Point(2133, 2061));  
         posicaoKhanMelhorias = new Point(105, 2795);
     }
 
-    // medidas com o modo de medição, em pixels da imagem original
     private void carregarCoordenadas() {
         coordenadas.put(0, new Point(128, 542));
         coordenadas.put(1, new Point(470, 542));
@@ -344,20 +323,19 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         coordenadas.put(33, new Point(1448, 1264));
     }
 
-    // províncias e cidades ficam no centro das paradas em volta delas
     private void calcularCentros() {
         for (int id : modelo.idsDasProvincias()) {
             Point c = centro(modelo.paradasDaProvincia(id));
             if (c != null)
                 centrosProvincias.put(id, c);
         }
-        centrosProvincias.putAll(posicoesTributos);    // posição medida vale mais que a calculada
+        centrosProvincias.putAll(posicoesTributos);   
         for (String nome : modelo.nomesDasCidades()) {
             Point c = centro(modelo.paradasDaCidade(nome));
             if (c != null)
                 centrosCidades.put(nome, c);
         }
-        centrosCidades.putAll(posicoesCidades);        // posição medida vale mais que a calculada
+        centrosCidades.putAll(posicoesCidades);     
     }
 
     private Point centro(List<Integer> paradas) {
@@ -373,25 +351,21 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         return (n == 0) ? null : new Point(sx / n, sy / n);
     }
 
-    // onde ficam os tributos de cada província (a = 0 ... l = 11), medidas com
-    // MODO_MEDICAO = MEDIR_TRIBUTOS; província sem posição medida usa o centro das paradas em volta
     private void carregarPosicoesTributos() {
-        posicoesTributos.put(0, new Point(632, 421));     // província a
-        posicoesTributos.put(1, new Point(854, 361));     // província b
-        posicoesTributos.put(2, new Point(801, 940));     // província c
-        posicoesTributos.put(3, new Point(1245, 933));    // província d
-        posicoesTributos.put(4, new Point(1964, 756));    // província e
-        posicoesTributos.put(5, new Point(2159, 1053));   // província f
-        posicoesTributos.put(6, new Point(523, 1223));    // província g
-        posicoesTributos.put(7, new Point(606, 1663));    // província h
-        posicoesTributos.put(8, new Point(1520, 1629));   // província i
-        posicoesTributos.put(9, new Point(1678, 1922));   // província j
-        posicoesTributos.put(10, new Point(2061, 1828));  // província k
-        posicoesTributos.put(11, new Point(2400, 1565));  // província l
+        posicoesTributos.put(0, new Point(632, 421));
+        posicoesTributos.put(1, new Point(854, 361));
+        posicoesTributos.put(2, new Point(801, 940));
+        posicoesTributos.put(3, new Point(1245, 933));
+        posicoesTributos.put(4, new Point(1964, 756));
+        posicoesTributos.put(5, new Point(2159, 1053));
+        posicoesTributos.put(6, new Point(523, 1223));
+        posicoesTributos.put(7, new Point(606, 1663));
+        posicoesTributos.put(8, new Point(1520, 1629));
+        posicoesTributos.put(9, new Point(1678, 1922));
+        posicoesTributos.put(10, new Point(2061, 1828));
+        posicoesTributos.put(11, new Point(2400, 1565));
     }
 
-    // centro de cada cidade no mapa, medido com MODO_MEDICAO = MEDIR_CIDADES;
-    // cidade sem posição medida usa o centro das paradas em volta
     private void carregarPosicoesCidades() {
     	posicoesCidades.put("Bagda", new Point(252, 1708));
     	posicoesCidades.put("Cabul", new Point(1264, 2054));
@@ -404,8 +378,6 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
     	posicoesCidades.put("Sarai", new Point(1727, 444));
     }
 
-    // centro de cada um dos 5 espaços de melhoria exposta (0 a 4), medido com
-    // MODO_MEDICAO = MEDIR_MELHORIAS; espaço sem posição medida não é desenhado
     private void carregarPosicoesMelhorias() {
     	posicoesMelhorias.put(4, new Point(301, 2799));
     	posicoesMelhorias.put(3, new Point(568, 2799));
@@ -414,8 +386,6 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
     	posicoesMelhorias.put(0, new Point(1354, 2802));
     }
 
-    // centro de cada espaço de bônus do tabuleiro (os quadrados com o "1"), medido com
-    // MODO_MEDICAO = MEDIR_BONUS; espaço sem posição medida não é desenhado
     private void carregarPosicoesBonus() {
     	posicoesBonus.put(0, new Point(1381, 166));
     	posicoesBonus.put(1, new Point(2415, 286));
@@ -440,12 +410,10 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         return maisProximo(centrosProvincias, x, y, RAIO_PROVINCIA);
     }
 
-    // modo Khan: província do Khan cuja posição medida está perto do clique, ou -1
     public int posicaoKhanEm(int x, int y) {
         return maisProximo(posicoesKhan, x, y, RAIO_PROVINCIA);
     }
 
-    // modo Khan: o clique foi na posição do Khan na área de melhorias?
     public boolean khanMelhoriasEm(int x, int y) {
         return posicaoKhanMelhorias != null
                 && naTela(posicaoKhanMelhorias).distance(x, y) <= RAIO_PROVINCIA * escala;
@@ -466,7 +434,6 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         return melhor;
     }
 
-    // posição (0 a 4) da melhoria exposta desenhada perto do clique, ou -1
     public int melhoriaEm(int x, int y) {
         int espaco = maisProximo(posicoesMelhorias, x, y, RAIO_MELHORIA);
         return (espaco < modelo.melhoriasExpostas().size()) ? espaco : -1;
@@ -485,7 +452,6 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         return melhor;
     }
 
-    // {jogador, peão} do peão desenhado no ponto, ou null; o de cima ganha
     public int[] peaoEm(int x, int y) {
         for (int i = ordemDosPeoes.size() - 1; i >= 0; i--) {
             String chave = ordemDosPeoes.get(i);
@@ -503,7 +469,6 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         repaint();
     }
 
-    // menu com os tesouros da cidade; cada item volta ao Controller pelo listener recebido
     public void mostrarMenuAtaque(String cidade, List<String> tesouros, int custo, int x, int y,
                                   ActionListener tratador) {
         JPopupMenu menu = new JPopupMenu();
@@ -533,7 +498,7 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
             desenharCidades(g2);
             desenharMelhorias(g2);
             desenharBonus(g2);
-            desenharYurts(g2);                          // embaixo: os peões ficam em pé sobre eles
+            desenharYurts(g2);                         
             desenharPeoes(g2);
             desenharKhan(g2);
         }
@@ -555,15 +520,12 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         }
     }
 
-    // cidade revelada: a imagem dela e os tesouros que restam, um em cada quadrante;
-    // conquistada: a mesma imagem com o yurt do conquistador por cima
     private void desenharCidades(Graphics2D g2) {
         for (String nome : centrosCidades.keySet()) {
             if (!modelo.cidadeRevelada(nome))
                 continue;
             Point c = naTela(centrosCidades.get(nome));
 
-            // tamanho da cidade na tela (sem imagem, um quadrado de CIDADE_IMAGEM)
             Image img = imgCidades.get(nome);
             int w = (img != null) ? img.getWidth(null) : px(CIDADE_IMAGEM);
             int h = (img != null) ? img.getHeight(null) : px(CIDADE_IMAGEM);
@@ -586,7 +548,6 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         }
     }
 
-    // as melhorias expostas, cada uma no seu espaço medido (a 1ª no espaço 0, e assim por diante)
     private void desenharMelhorias(Graphics2D g2) {
         List<String> expostas = modelo.melhoriasExpostas();
         for (int k = 0; k < expostas.size(); k++) {
@@ -599,7 +560,6 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         }
     }
 
-    // cada peça de bônus no seu espaço; espaço vazio (peça já pega) fica sem desenho
     private void desenharBonus(Graphics2D g2) {
         for (int k = 0; k < modelo.numeroDeEspacosBonus(); k++) {
             String tipo = modelo.pecaBonusNoEspaco(k);
@@ -612,9 +572,6 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         }
     }
 
-    // centro do quadrante k de uma imagem w x h centrada em c:
-    // 0 = em cima à esquerda, 1 = em cima à direita, 2 = embaixo à esquerda, 3 = embaixo à direita.
-    // Cada quadrante tem w/2 x h/2, então o centro dele fica a w/4 e h/4 do centro da imagem.
     private Point centroDoQuadrante(Point c, int w, int h, int k) {
         int dx = (k % 2 == 0) ? -w / 4 : w / 4;
         int dy = (k < 2) ? -h / 4 : h / 4;
@@ -623,8 +580,6 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
 
     // ---------- POSIÇÕES DENTRO DE UMA PARADA ----------
 
-    // ponto no chão da n-ésima peça entre "total" na parada: até 3 lado a lado por fileira,
-    // o grupo centralizado. Peões e yurts usam as mesmas posições.
     private Point posicaoNaParada(Point base, int n, int total) {
         int tamPeao = px(PEAO_IMAGEM);
         int alturaPeao = tamPeao * 13 / 10;
@@ -633,7 +588,6 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         return new Point(base.x + (int) (coluna * tamPeao * 0.8), base.y + (n / 3) * (alturaPeao / 3));
     }
 
-    // um peão (de jogador ou o Khan) em pé sobre o ponto
     private Rectangle desenharEmPe(Graphics2D g2, Image img, Point chao) {
         int tamPeao = px(PEAO_IMAGEM);
         int alturaPeao = tamPeao * 13 / 10;
@@ -643,7 +597,6 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         return new Rectangle(x, y, tamPeao, alturaPeao);
     }
 
-    // yurts: círculos da cor do dono, nas mesmas posições que os peões ocupam
     private void desenharYurts(Graphics2D g2) {
         int d = px(YURT_IMAGEM);
         for (Integer id : coordenadas.keySet()) {
@@ -656,7 +609,6 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         }
     }
 
-    // o Khan é um peão branco, nas posições medidas para ele
     private void desenharKhan(Graphics2D g2) {
         Point ponto = null;
         if (modelo.khanNasMelhorias())
@@ -664,7 +616,7 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         else if (modelo.provinciaDoKhan() != -1)
             ponto = posicoesKhan.get(modelo.provinciaDoKhan());
         if (ponto == null)
-            return;                                     // fora do mapa ou posição ainda não medida
+            return;   
         desenharEmPe(g2, Desenhos.peao("branco", px(PEAO_IMAGEM)), naTela(ponto));
     }
 
@@ -673,7 +625,6 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         areasDosPeoes.clear();
         ordemDosPeoes.clear();
 
-        // 1ª passada: quantos peões há em cada parada, para centralizar o grupo
         Map<Integer, Integer> total = new HashMap<Integer, Integer>();
         for (int j = 0; j < modelo.numeroDeJogadores(); j++)
             for (int p = 0; p < modelo.numeroDePeoes(j); p++) {
@@ -681,7 +632,6 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
                 total.put(id, total.getOrDefault(id, 0) + 1);
             }
 
-        // 2ª passada: desenha cada peão na sua posição dentro da parada
         Map<Integer, Integer> desenhados = new HashMap<Integer, Integer>();
         for (int j = 0; j < modelo.numeroDeJogadores(); j++) {
             Image img = Desenhos.peao(modelo.corDoJogador(j), tamPeao);
@@ -714,7 +664,6 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         g2.drawString(texto, x, y);
     }
 
-    // bolinhas vermelhas com o id, para conferir o que já foi medido
     private void desenharPontosMedidos(Graphics2D g2) {
         g2.setColor(Color.RED);
         Map<Integer, Point> pontos = coordenadas;
@@ -743,7 +692,6 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
 
     // ---------- MEDIÇÃO (só com MODO_MEDICAO diferente de NADA) ----------
 
-    // cada clique imprime a linha pronta para colar, em pixels da imagem original
     private class MedidorClique extends MouseAdapter {
         @Override
         public void mouseClicked(MouseEvent e) {
@@ -758,8 +706,6 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         }
     }
 
-    // Khan: as províncias do Khan (a, e, h, k) e por último a área de melhorias
-    // tributos: todas as províncias, de a até l
     private void prepararMedicao() {
         if (MODO_MEDICAO == MEDIR_BONUS) {
             avisarProxima();

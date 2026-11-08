@@ -9,8 +9,6 @@ import model.ModelFacade;
 import model.ObservadoIF;
 import model.ObservadorIF;
 
-// Janela da cartela (tabuleiro do jogador) com as 4 colunas. É um observador (Cap. 17):
-// aparece quando a fachada notifica ABRIR_CARTELA e se redesenha a cada mudança de estado.
 public class JanelaCartela extends JFrame implements ObservadorIF {
     private static final int LARGURA = 860;
     private static final int ALTURA = 560;
@@ -27,7 +25,7 @@ public class JanelaCartela extends JFrame implements ObservadorIF {
         setResizable(false);
         setContentPane(new PainelCartela());
         pack();
-        ControladorJogo.getInstance().registra(this);   // Cap. 17: registro pelo controlador
+        ControladorJogo.getInstance().registra(this);
     }
 
     @Override
@@ -59,7 +57,6 @@ public class JanelaCartela extends JFrame implements ObservadorIF {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-            // as 4 colunas
             for (int c = 0; c < 4; c++) {
                 int x = 16 + c * (LARGURA_COLUNA + 8);
                 String regiao = modelo.regiaoDaColuna(jogador, c);
@@ -84,7 +81,6 @@ public class JanelaCartela extends JFrame implements ObservadorIF {
                 }
             }
 
-            // recursos
             int y = 430;
             g2.setColor(Color.BLACK);
             g2.setFont(new Font("SansSerif", Font.BOLD, 14));
@@ -107,7 +103,6 @@ public class JanelaCartela extends JFrame implements ObservadorIF {
             g2.drawString("Yurts na reserva: " + modelo.yurtsRestantes(jogador)
                     + "  ·  Votos: " + modelo.votosDe(jogador), 16, y + 50);
 
-            // carta secreta (a cartela só é aberta para o jogador da vez)
             String secreta = modelo.cartaSecreta(jogador);
             if (secreta != null) {
                 g2.setFont(new Font("SansSerif", Font.BOLD, 13));

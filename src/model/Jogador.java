@@ -108,7 +108,6 @@ class Jogador
     	return this.tabuleiro;
     }
 
-    // p. 19: a carta secreta escolhida no inicio
     void escolherCartaSecreta(CartaConselheiroSecreto c) {
         this.cartaSecreta = c;
     }

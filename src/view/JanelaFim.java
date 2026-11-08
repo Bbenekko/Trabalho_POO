@@ -9,7 +9,6 @@ import model.ModelFacade;
 import model.ObservadoIF;
 import model.ObservadorIF;
 
-// Placar final. É um observador (Cap. 17): aparece quando a fachada notifica FIM_DE_JOGO.
 public class JanelaFim extends JFrame implements ObservadorIF {
     private ModelFacade modelo = ModelFacade.getInstance();
     private JPanel tabela = new JPanel();
@@ -27,7 +26,7 @@ public class JanelaFim extends JFrame implements ObservadorIF {
         setLayout(new BorderLayout());
         add(lblVencedor, BorderLayout.NORTH);
         add(tabela, BorderLayout.CENTER);
-        ControladorJogo.getInstance().registra(this);   // Cap. 17: registro pelo controlador
+        ControladorJogo.getInstance().registra(this);
     }
 
     @Override

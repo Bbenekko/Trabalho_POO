@@ -12,10 +12,7 @@ import view.JanelaInicial;
 import view.JanelaJogo;
 import view.PainelTabuleiro;
 
-// Singleton (Cap. 17): organiza a sequência de uma partida e traduz cada evento da interface
-// em uma chamada à fachada. Quem atualiza a tela é o Observer: a fachada notifica os painéis.
 public class ControladorJogo {
-    // modos de ação: o que um clique no mapa significa (mesma ordem do combo da View)
     public static final int MOVER = 0;
     public static final int TRIBUTO = 1;
     public static final int KHAN = 2;
@@ -41,14 +38,12 @@ public class ControladorJogo {
         return instancia;
     }
 
-    // Cap. 17: o observador se registra pelo controlador, que repassa ao observado
     public void registra(ObservadorIF o) {
         modelo.add(o);
     }
 
     // ===================== SEQUÊNCIA DA PARTIDA =====================
 
-    // 1. janela inicial: número de jogadores, cores e herdeiros
     void iniciar() {
         janelaInicial = new JanelaInicial();
         janelaInicial.getBtnComecar().setActionCommand(TratadorAcoes.COMECAR);
@@ -66,14 +61,12 @@ public class ControladorJogo {
         modelo.novoJogo(cores, herdeiros);
         janelaInicial.dispose();
 
-        // a janela principal e as janelas observadoras existem desde já, mas só aparecem quando notificadas
         janela = new JanelaJogo();
         new JanelaCartela();
         new JanelaCartas();
         new JanelaFim();
         registrarListenersDaJanela();
 
-        // 2. cada jogador escolhe a carta secreta, um de cada vez
         jogadorEscolhendoCarta = 0;
         janelaCartaSecreta = new JanelaCartaSecreta();
         janelaCartaSecreta.getBtnOpcao(0).setActionCommand(TratadorAcoes.CARTA_0);
@@ -90,7 +83,6 @@ public class ControladorJogo {
         if (jogadorEscolhendoCarta < modelo.numeroDeJogadores()) {
             janelaCartaSecreta.mostrar(jogadorEscolhendoCarta);
         } else {
-            // 3. começam os turnos
             janelaCartaSecreta.dispose();
             janela.setVisible(true);
         }
@@ -162,11 +154,11 @@ public class ControladorJogo {
     }
 
     void verCartela() {
-        modelo.pedirCartela(modelo.jogadorDaVez());   // a JanelaCartela abre ao ser notificada
+        modelo.pedirCartela(modelo.jogadorDaVez()); 
     }
 
     void verCartas() {
-        modelo.pedirCartas();                         // a JanelaCartas abre ao ser notificada
+        modelo.pedirCartas();                  
     }
 
     // ===================== CLIQUES NO MAPA =====================
@@ -188,7 +180,6 @@ public class ControladorJogo {
     }
 
     private void cliqueMover(PainelTabuleiro painel, int x, int y) {
-        // clicar num peão do jogador da vez o seleciona (a Altani tem 2)
         int[] peao = painel.peaoEm(x, y);
         if (peao != null && peao[0] == modelo.jogadorDaVez()) {
             peaoSelecionado = peao[1];
@@ -198,7 +189,7 @@ public class ControladorJogo {
         }
         int id = painel.paradaEm(x, y);
         if (id == -1)
-            return;                                   // fora de qualquer parada: nada acontece
+            return;  
         if (!modelo.turnoEmAndamento())
             janela.mostrarAviso("Ative uma coluna antes de mover");
         else if (!modelo.mover(peaoSelecionado, id))
@@ -218,7 +209,7 @@ public class ControladorJogo {
         }
         int prov = painel.posicaoKhanEm(x, y);
         if (prov == -1)
-            prov = painel.provinciaEm(x, y);          // também aceita clicar nos tributos da província
+            prov = painel.provinciaEm(x, y);  
         if (prov == -1)
             janela.mostrarAviso("Clique numa das 4 posições do Khan ou na área de melhorias");
         else if (!modelo.usarKhan(prov))
@@ -231,7 +222,6 @@ public class ControladorJogo {
             janela.mostrarAviso("Não é possível construir yurt na parada " + id);
     }
 
-    // a cidade abre um menu com os tesouros; a escolha volta por TratadorAcoes
     private void cliqueAtacar(PainelTabuleiro painel, int x, int y) {
         String cidade = painel.cidadeEm(x, y);
         if (cidade == null)
@@ -252,7 +242,6 @@ public class ControladorJogo {
     // ===================== INÍCIO DO PROGRAMA =====================
 
     public static void main(String[] args) {
-        // sem lambda: classe anônima
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {

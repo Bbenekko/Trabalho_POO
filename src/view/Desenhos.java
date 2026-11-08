@@ -6,14 +6,11 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 
-// Gera, uma única vez, as imagens das peças que não têm arquivo próprio.
-// Quem desenha na tela só usa drawImage com estas imagens prontas.
 class Desenhos {
     private static Map<String, Image> cache = new HashMap<String, Image>();
 
-    // ---------- IMAGENS DAS CARTAS (ajuste os caminhos; sem arquivo, usa a carta gerada) ----------
+    // ---------- IMAGENS DAS CARTAS ----------
 
-    // cartas de conselheiro aberto
     private static final String IMG_CARTA_QUATRO_ESPADAS = "doc/img/cartas/cartas1/cartas1-1.jpg";
     private static final String IMG_CARTA_SEIS_YURTS = "doc/img/cartas/cartas1/cartas1-2.jpg";
     private static final String IMG_CARTA_DEZ_YURTS = "doc/img/cartas/cartas1/cartas1-3.jpg";
@@ -31,9 +28,6 @@ class Desenhos {
     private static final String IMG_CARTA_QUATRO_MELHORIAS_NUMA_COLUNA = "doc/img/cartas/cartas3/cartas3-1.jpg";
     private static final String IMG_CARTA_DUAS_COLUNAS_COM_DUAS = "doc/img/cartas/cartas3/cartas3-2.jpg";
 
-
-    // cartas de conselheiro secreto
-    
     private static final String IMG_CARTA_SACERDOTE = "doc/img/cartas/cartas4/cartas4-1.jpg";
     private static final String IMG_CARTA_COLECIONADOR = "doc/img/cartas/cartas4/cartas4-2.jpg";
     
@@ -49,7 +43,6 @@ class Desenhos {
     private static final String IMG_CARTA_PREFEITO = "doc/img/cartas/cartas8/cartas8-1.jpg";
     private static final String IMG_CARTA_BAJULADOR = "doc/img/cartas/cartas8/cartas8-2.jpg";
 
-    // tipo da carta (nome do enum no Model) → caminho da imagem
     private static Map<String, String> arquivosCartas = new HashMap<String, String>();
 
     static {

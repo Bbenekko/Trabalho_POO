@@ -31,7 +31,7 @@ class CartaConselheiroAberto extends CartaConselheiro {
 			case tres_cidades:                 return 3;
 			case linha_de_melhorias:           return 1;
 			case duas_colunas_com_duas:        return 2;
-			default:                           return 4;   // quatro_melhorias_numa_coluna
+			default:                           return 4;
 		}
 	}
 
@@ -40,7 +40,7 @@ class CartaConselheiroAberto extends CartaConselheiro {
 		TabuleiroJogador tj = j.getTabuleiro();
 		switch (this.tipo) {
 			case quatro_espadas:
-				return j.quantidadeTributo(TipoTributo.espada);   // nao precisa gastar
+				return j.quantidadeTributo(TipoTributo.espada);
 			case seis_yurts:
 			case dez_yurts:
 				return this.yurtsNoMapa(j);
@@ -66,7 +66,7 @@ class CartaConselheiroAberto extends CartaConselheiro {
 						colunas++;
 				return colunas;
 			}
-			default: {                                            // quatro_melhorias_numa_coluna
+			default: {       
 				int maior = 0;
 				for (ColunaAcao c : tj.getColunas())
 					maior = Math.max(maior, c.getMelhorias().size());
@@ -75,7 +75,6 @@ class CartaConselheiroAberto extends CartaConselheiro {
 		}
 	}
 
-	// p. 13 e 18: o primeiro a cumprir ganha 1 voto e a carta sai do jogo
 	boolean verificar(Jogador j, Tabuleiro t) {
 		if (this.retirada)
 			return false;

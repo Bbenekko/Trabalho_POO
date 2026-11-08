@@ -9,8 +9,6 @@ import model.ModelFacade;
 import model.ObservadoIF;
 import model.ObservadorIF;
 
-// Lateral com o estado do jogador da vez e os controles do turno. É um observador (Cap. 17).
-// Os listeners dos botões são registrados pelo Controller.
 class PainelControles extends JPanel implements ObservadorIF {
     static final int LARGURA = 300;
     private static final int ALTURA_INDICADOR = 40;
@@ -45,7 +43,6 @@ class PainelControles extends JPanel implements ObservadorIF {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(BorderFactory.createEmptyBorder(MARGEM, MARGEM, MARGEM, MARGEM));
 
-        // mesma ordem das constantes MOVER, TRIBUTO, KHAN, ATACAR e YURT do ControladorJogo
         modos.addItem("Clique move o peão");
         modos.addItem("Clique pega tributo");
         modos.addItem("Clique leva o Khan");
@@ -85,7 +82,7 @@ class PainelControles extends JPanel implements ObservadorIF {
         adicionar(lblAviso);
 
         atualizar();
-        ControladorJogo.getInstance().registra(this);   // Cap. 17: registro pelo controlador
+        ControladorJogo.getInstance().registra(this);
     }
 
     private JLabel titulo(String texto) {
@@ -99,7 +96,6 @@ class PainelControles extends JPanel implements ObservadorIF {
         return Box.createRigidArea(new Dimension(0, altura));
     }
 
-    // no BoxLayout, todos com o mesmo alinhamento e sem esticar na altura
     private void adicionar(Component comp) {
         if (comp instanceof JComponent) {
             JComponent j = (JComponent) comp;
@@ -183,7 +179,6 @@ class PainelControles extends JPanel implements ObservadorIF {
         return Character.toUpperCase(herdeiro.charAt(0)) + herdeiro.substring(1);
     }
 
-    // JLabel com quebra de linha na largura da lateral
     private static void texto(JLabel l, String s) {
         l.setText("<html><div style='width:" + (LARGURA - 3 * MARGEM) + "px'>" + s + "</div></html>");
     }
@@ -196,7 +191,6 @@ class PainelControles extends JPanel implements ObservadorIF {
         lblAviso.setText(" ");
     }
 
-    // indicador obrigatório: faixa na cor do jogador da vez
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);

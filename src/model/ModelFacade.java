@@ -3,16 +3,11 @@ package model;
 import java.util.ArrayList;
 import java.util.List;
 
-// Unica classe publica do model: View e Controller so falam com o jogo por aqui.
-// Recebe e devolve apenas tipos simples (int, boolean, String e listas deles).
-// Jogadores sao identificados pelo indice na ordem de jogo (0..n-1), peoes pelo indice no jogador,
-// paradas e provincias pelo id do Tabuleiro, cidades pelo nome e enums pelo nome da constante.
 public class ModelFacade implements ObservadoIF {
-	// o que get(EVENTO) devolve depois de um notify
 	public static final int EVENTO = 0;
-	public static final int JOGADOR_DA_CARTELA = 1;      // get(JOGADOR_DA_CARTELA): de quem e a cartela pedida
+	public static final int JOGADOR_DA_CARTELA = 1;
 
-	public static final int ESTADO = 1;          // algo mudou no tabuleiro ou nos jogadores
+	public static final int ESTADO = 1;
 	public static final int MOVEU_PEAO = 2;
 	public static final int ABRIR_CARTELA = 3;
 	public static final int ABRIR_CARTAS = 4;
@@ -34,7 +29,7 @@ public class ModelFacade implements ObservadoIF {
 		return instancia;
 	}
 
-	// ===================== OBSERVER (Cap. 17) =====================
+	// ===================== OBSERVER =====================
 
 	public void add(ObservadorIF o) {
 		if (!this.observadores.contains(o))
@@ -53,7 +48,6 @@ public class ModelFacade implements ObservadoIF {
 		return 0;
 	}
 
-	// avisa todos os observadores; eles consultam o que precisam pela fachada
 	private void notificar(int evento) {
 		this.ultimoEvento = evento;
 		List<ObservadorIF> copia = new ArrayList<ObservadorIF>(this.observadores);
@@ -67,9 +61,8 @@ public class ModelFacade implements ObservadoIF {
 		return ok;
 	}
 
-	// pedidos de exibicao: a janela abre porque foi notificada (enunciado da 3a iteracao)
 	public void pedirCartela(int jogador) {
-		this.jogador(jogador);                       // confere o indice
+		this.jogador(jogador);
 		this.jogadorDaCartela = jogador;
 		this.notificar(ABRIR_CARTELA);
 	}
@@ -91,7 +84,6 @@ public class ModelFacade implements ObservadoIF {
 		this.notificar(NOVO_JOGO);
 	}
 
-	// usa as primeiras cores e herdeiros, na ordem dos enums
 	public void novoJogo(int numJogadores) {
 		if (numJogadores < 2 || numJogadores > 5)
 			throw new IllegalArgumentException("O jogo e para 2 a 5 jogadores: " + numJogadores);
@@ -134,7 +126,6 @@ public class ModelFacade implements ObservadoIF {
 		return this.jogo().getTurnoAtual() != null;
 	}
 
-	// clique no mapa: so o destino; o Turno procura o caminho mais barato
 	public boolean podeMover(int peao, int idParada) {
 		List<Parada> caminho = this.caminhoAte(peao, idParada);
 		return caminho != null && this.jogo().getTurnoAtual().podeMover(this.peaoDaVez(peao), caminho);
@@ -145,7 +136,6 @@ public class ModelFacade implements ObservadoIF {
 		return this.depois(caminho != null && this.jogo().getTurnoAtual().mover(this.peaoDaVez(peao), caminho), MOVEU_PEAO);
 	}
 
-	// caminho escolhido parada a parada (sem a de partida; a ultima e o destino)
 	public boolean podeMover(int peao, List<Integer> caminho) {
 		Turno turno = this.jogo().getTurnoAtual();
 		Peao p = this.peaoDaVez(peao);
@@ -196,7 +186,6 @@ public class ModelFacade implements ObservadoIF {
 		return this.depois(turno.atacar(c, t), ESTADO);
 	}
 
-	// espadas que o proximo ataque a esta cidade custaria no turno atual
 	public int custoAtaque(String nomeCidade) {
 		Turno turno = this.jogo().getTurnoAtual();
 		Cidade c = this.tabuleiro().getCidade(nomeCidade);
@@ -309,7 +298,6 @@ public class ModelFacade implements ObservadoIF {
 		return tesouros;
 	}
 
-	// indice do jogador que conquistou a cidade, ou -1
 	public int conquistadorDaCidade(String nomeCidade) {
 		Jogador j = this.cidade(nomeCidade).getConquistador();
 		return (j == null) ? -1 : this.indiceDe(j);
@@ -323,7 +311,6 @@ public class ModelFacade implements ObservadoIF {
 		return this.provincia(idProvincia).getTipoTributo().name();
 	}
 
-	// indices dos jogadores com yurt na parada (um por yurt)
 	public List<Integer> yurtsNaParada(int idParada) {
 		List<Integer> donos = new ArrayList<Integer>();
 		for (Jogador j : this.parada(idParada).getYurts())
@@ -331,7 +318,6 @@ public class ModelFacade implements ObservadoIF {
 		return donos;
 	}
 
-	// id da provincia onde esta o Khan, ou -1 se ele esta fora do mapa
 	public int provinciaDoKhan() {
 		Provincia p = this.tabuleiro().getKhan().getProvincia();
 		return (p == null) ? -1 : p.getId();
@@ -353,7 +339,6 @@ public class ModelFacade implements ObservadoIF {
 		return this.tabuleiro().getTrilha().getLimite();
 	}
 
-	// nomes aceitos por novoJogo, na ordem dos enums
 	public List<String> coresDisponiveis() {
 		List<String> nomes = new ArrayList<String>();
 		for (Cor c : Cor.values())
@@ -370,7 +355,6 @@ public class ModelFacade implements ObservadoIF {
 
 	// ===================== CARTAS DE CONSELHEIRO =====================
 
-	// tipos das 4 cartas abertas, na ordem do tabuleiro
 	public List<String> cartasAbertas() {
 		List<String> tipos = new ArrayList<String>();
 		for (CartaConselheiroAberto c : this.tabuleiro().getCartasAbertas())
@@ -393,7 +377,6 @@ public class ModelFacade implements ObservadoIF {
 		return this.depois(this.jogo().escolherCartaSecreta(this.jogador(jogador), opcao), ESTADO);
 	}
 
-	// tipo da carta secreta do jogador, ou null se ainda nao escolheu
 	public String cartaSecreta(int jogador) {
 		CartaConselheiroSecreto c = this.jogador(jogador).getCartaSecreta();
 		return (c == null) ? null : c.getTipo().name();
@@ -412,7 +395,6 @@ public class ModelFacade implements ObservadoIF {
 		return this.tabuleiro().numeroDeEspacosBonus();
 	}
 
-	// tipo da peça de bônus no espaço (0 a numeroDeEspacosBonus() - 1), ou null se o espaço está vazio
 	public String pecaBonusNoEspaco(int espaco) {
 		TipoPecaBonus t = this.tabuleiro().pecaBonusNoEspaco(espaco);
 		return (t == null) ? null : t.name();
@@ -447,7 +429,6 @@ public class ModelFacade implements ObservadoIF {
 		return nomes;
 	}
 
-	// paradas em volta da provincia
 	public List<Integer> paradasDaProvincia(int idProvincia) {
 		Provincia prov = this.provincia(idProvincia);
 		List<Integer> ids = new ArrayList<Integer>();
@@ -457,7 +438,6 @@ public class ModelFacade implements ObservadoIF {
 		return ids;
 	}
 
-	// paradas ligadas a cidade
 	public List<Integer> paradasDaCidade(String nomeCidade) {
 		Cidade c = this.cidade(nomeCidade);
 		List<Integer> ids = new ArrayList<Integer>();
@@ -485,13 +465,11 @@ public class ModelFacade implements ObservadoIF {
 		return turno != null && this.depois(turno.pegarMelhoriaGratis(posicao), ESTADO);
 	}
 
-	// regiao da coluna (russia, persia, china) ou "branca" para a 4a
 	public String regiaoDaColuna(int jogador, int coluna) {
 		Regiao r = this.jogador(jogador).getTabuleiro().getColuna(coluna).getRegiao();
 		return (r == null) ? "branca" : r.name();
 	}
 
-	// depois de comprar, a linha completa pode dar uma melhoria gratis (p. 12)
 	public boolean temMelhoriaGratis(int coluna) {
 		Turno turno = this.jogo().getTurnoAtual();
 		return turno != null && turno.temMelhoriaGratis(coluna);
@@ -545,7 +523,6 @@ public class ModelFacade implements ObservadoIF {
 		return p;
 	}
 
-	// null se algum id nao existir
 	private List<Parada> paradas(List<Integer> ids) {
 		List<Parada> caminho = new ArrayList<Parada>();
 		for (int id : ids) {
@@ -557,7 +534,6 @@ public class ModelFacade implements ObservadoIF {
 		return caminho;
 	}
 
-	// caminho mais barato do peao da vez ate a parada, ou null (sem turno, peao ou parada invalidos)
 	private List<Parada> caminhoAte(int peao, int idParada) {
 		Turno turno = this.jogo().getTurnoAtual();
 		Peao p = this.peaoDaVez(peao);
@@ -567,7 +543,6 @@ public class ModelFacade implements ObservadoIF {
 		return turno.caminhoAte(p, destino);
 	}
 
-	// "tipo:regiao" ou "tesouro_virtual:regiao:tesouro"
 	private static List<String> descrever(List<Melhoria> melhorias) {
 		List<String> descricoes = new ArrayList<String>();
 		for (Melhoria m : melhorias) {

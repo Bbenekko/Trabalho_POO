@@ -9,8 +9,6 @@ import model.ModelFacade;
 import model.ObservadoIF;
 import model.ObservadorIF;
 
-// Janela de cartas de conselheiro. É um observador (Cap. 17): aparece quando a fachada
-// notifica ABRIR_CARTAS e se redesenha quando uma carta aberta é retirada.
 public class JanelaCartas extends JFrame implements ObservadorIF {
     private static final int LARGURA_CARTA = 160;
     private static final int ESPACO = 20;
@@ -23,7 +21,7 @@ public class JanelaCartas extends JFrame implements ObservadorIF {
         setResizable(false);
         setContentPane(new PainelCartas());
         pack();
-        ControladorJogo.getInstance().registra(this);   // Cap. 17: registro pelo controlador
+        ControladorJogo.getInstance().registra(this); 
     }
 
     @Override
@@ -54,7 +52,6 @@ public class JanelaCartas extends JFrame implements ObservadorIF {
             g2.setColor(Color.WHITE);
             g2.setFont(new Font("SansSerif", Font.BOLD, 14));
 
-            // as 4 abertas: valem para todos
             g2.drawString("Cartas abertas (1 voto para o primeiro que cumprir)", ESPACO, 26);
             List<String> abertas = modelo.cartasAbertas();
             int x = ESPACO;
@@ -63,7 +60,6 @@ public class JanelaCartas extends JFrame implements ObservadorIF {
                 x += LARGURA_CARTA + ESPACO;
             }
 
-            // a secreta só do jogador da vez
             int vez = modelo.jogadorDaVez();
             String secreta = modelo.cartaSecreta(vez);
             x += ESPACO;

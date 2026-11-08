@@ -52,9 +52,7 @@ class Turno {
 	}
 
 
-	// ---------- MOVER (p. 7 e 11) ----------
-
-	// caminho = paradas por onde o peao passa, sem a de partida; a ultima e o destino
+	// ---------- MOVER ----------
 	boolean podeMover(Peao peao, List<Parada> caminho) {
 		if (peao.getDono() != this.jogador || caminho.isEmpty() || caminho.contains(null))
 			return false;
@@ -62,7 +60,7 @@ class Turno {
 		if (custo < 0 || custo > this.movimentosRestantes)
 			return false;
 		Parada destino = caminho.get(caminho.size() - 1);
-		return destino.podeTerminarAqui(peao);         // pode passar por ocupada, nao terminar
+		return destino.podeTerminarAqui(peao);
 	}
 
 	boolean mover(Peao peao, List<Parada> caminho) {
@@ -73,7 +71,7 @@ class Turno {
 		for (int i = 0; i < caminho.size(); i++) {
 			Parada p = caminho.get(i);
 			boolean ultima = (i == caminho.size() - 1);
-			if (ultima || !p.temYurtDe(this.jogador))   // p. 11: yurt proprio pulado nao conta como visitada
+			if (ultima || !p.temYurtDe(this.jogador))
 				novasVisitadas.add(p);
 		}
 
@@ -84,10 +82,6 @@ class Turno {
 		return true;
 	}
 
-	// caminho mais barato da posicao do peao ate o destino, ou null se nao houver;
-	// usado pelo clique, que so informa o destino. Busca em largura 0-1:
-	// pular yurt proprio custa 0, qualquer outra parada custa 1, e o destino sempre custa 1.
-	// Nao confere movimentos nem vaga: isso e feito pelo podeMover/mover.
 	List<Parada> caminhoAte(Peao peao, Parada destino) {
 		Parada origem = peao.getPosicao();
 		if (destino == null || destino == origem)
@@ -103,7 +97,7 @@ class Turno {
 			Parada u = fila.removeFirst();
 			for (Parada v : u.getVizinhas()) {
 				if (v == destino || v == origem || !this.tabuleiro.saoAdjacentes(u, v))
-					continue;                              // o destino e tratado no fim
+					continue; 
 				int passo = v.temYurtDe(this.jogador) ? 0 : 1;
 				int novo = custo.get(u) + passo;
 				if (!custo.containsKey(v) || novo < custo.get(v)) {
@@ -117,7 +111,6 @@ class Turno {
 			}
 		}
 
-		// ultima parada antes do destino: a vizinha alcancada com menor custo
 		Parada penultima = null;
 		for (Parada u : destino.getVizinhas()) {
 			if (custo.containsKey(u) && this.tabuleiro.saoAdjacentes(u, destino)
@@ -134,7 +127,6 @@ class Turno {
 		return caminho;
 	}
 
-	// movimentos gastos no caminho, ou -1 se dois passos seguidos nao forem adjacentes
 	private int custoDoCaminho(Peao peao, List<Parada> caminho) {
 		Parada anterior = peao.getPosicao();
 		int custo = 0;
@@ -143,14 +135,14 @@ class Turno {
 			if (!this.tabuleiro.saoAdjacentes(anterior, p))
 				return -1;
 			boolean ultima = (i == caminho.size() - 1);
-			if (ultima || !p.temYurtDe(this.jogador))   // p. 11: pular yurt proprio nao gasta movimento
+			if (ultima || !p.temYurtDe(this.jogador))
 				custo++;
 			anterior = p;
 		}
 		return custo;
 	}
 
-	// ---------- PEGAR TRIBUTO (p. 8) ----------
+	// ---------- PEGAR TRIBUTO ----------
 
 	boolean pegarTributo(Provincia p) {
 		if (this.tributosRestantes == 0)
@@ -256,15 +248,12 @@ class Turno {
 		return true;
 	}
 
-	// p. 12: cada linha completa das 3 colunas coloridas da 1 melhoria gratis, que vai para a coluna branca.
-	// A coluna branca guarda as ja recebidas, entao a proxima linha a premiar e o tamanho dela + 1.
 	boolean melhoriaGratisDisponivel() {
 		TabuleiroJogador tj = this.jogador.getTabuleiro();
 		int proximaLinha = tj.getColuna(3).getMelhorias().size() + 1;
 		return tj.linhaCompleta(proximaLinha);
 	}
 
-	// escolhe uma das melhorias expostas, sem pagar e sem conferir a regiao
 	boolean pegarMelhoriaGratis(int posicao) {
 		if (!this.melhoriaGratisDisponivel() || this.jogador.getTabuleiro().getColuna(3).estaCheia())
 			return false;

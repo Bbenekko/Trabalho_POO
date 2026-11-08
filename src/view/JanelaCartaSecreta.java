@@ -6,8 +6,6 @@ import java.util.List;
 
 import model.ModelFacade;
 
-// Antes do primeiro turno, cada jogador vê suas 2 cartas secretas e fica com 1 (p. 19).
-// Os dois botões são tratados pelo Controller.
 public class JanelaCartaSecreta extends JFrame {
     private static final int LARGURA_CARTA = 200;
 
@@ -40,7 +38,6 @@ public class JanelaCartaSecreta extends JFrame {
         setLocationRelativeTo(null);
     }
 
-    // mostra as opções do jogador; os outros devem desviar o olhar
     public void mostrar(int jogador) {
         this.jogador = jogador;
         lblTitulo.setText("Jogador " + (jogador + 1) + " (" + modelo.corDoJogador(jogador)
@@ -53,7 +50,6 @@ public class JanelaCartaSecreta extends JFrame {
         return opcoes[i];
     }
 
-    // a carta é desenhada com drawImage
     private class PainelCarta extends JPanel {
         private int opcao;
 

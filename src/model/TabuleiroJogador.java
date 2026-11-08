@@ -6,7 +6,6 @@ import java.util.List;
 
 class TabuleiroJogador 
 {
-	// ordem fixa: 0 = amarela (russia), 1 = verde (persia), 2 = vermelha (china), 3 = branca
 	private List<ColunaAcao> colunas = new ArrayList<ColunaAcao>();
 	
 	TabuleiroJogador(Herdeiro herdeiro)

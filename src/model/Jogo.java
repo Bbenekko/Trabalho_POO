@@ -110,7 +110,6 @@ class Jogo {
 			return false;                        
 		this.turnoAtual = null;
 
-		// p. 13: cartas de conselheiro aberto cumpridas neste turno dao 1 voto
 		for (CartaConselheiroAberto carta : this.tabuleiro.getCartasAbertas())
 			carta.verificar(this.jogadorDaVez(), this.tabuleiro);
 
@@ -129,7 +128,6 @@ class Jogo {
 		return true;
 	}
 
-	// p. 19: cada jogador recebe 2 cartas secretas e escolhe 1 para manter
 	private void distribuirCartasSecretas() {
 		List<TipoConselheiroSecreto> tipos = new ArrayList<TipoConselheiroSecreto>();
 		for (TipoConselheiroSecreto tipo : TipoConselheiroSecreto.values())
@@ -155,7 +153,6 @@ class Jogo {
 		return true;
 	}
 
-	// p. 16: votos da trilha do Kurultai + votos da carta secreta
 	int pontuacaoFinal(Jogador j) {
 		int total = this.tabuleiro.getTrilha().votosDe(j);
 		if (j.getCartaSecreta() != null)
@@ -163,7 +160,6 @@ class Jogo {
 		return total;
 	}
 
-	// jogadores com a maior pontuacao (mais de um em caso de empate)
 	List<Jogador> vencedores() {
 		List<Jogador> melhores = new ArrayList<Jogador>();
 		int maior = -1;

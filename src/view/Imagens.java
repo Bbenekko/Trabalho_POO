@@ -18,7 +18,6 @@ class Imagens {
         }
     }
 
-    // para imagens opcionais: sem arquivo, devolve null sem avisar
     static Image carregarSeExistir(String caminho) {
         File f = new File(caminho);
         if (!f.isFile())

@@ -3,7 +3,6 @@ package controller;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-// Listener do Swing (não é o Observer do Cap. 17): repassa cada botão ao ControladorJogo.
 class TratadorAcoes implements ActionListener {
     static final String COMECAR = "COMECAR";
     static final String CARTA_0 = "CARTA_0";
@@ -15,7 +14,7 @@ class TratadorAcoes implements ActionListener {
     static final String MELHORIA_GRATIS = "MELHORIA_GRATIS";
     static final String VER_CARTELA = "VER_CARTELA";
     static final String VER_CARTAS = "VER_CARTAS";
-    static final String ATACAR = "ATACAR:";          // ATACAR:<cidade>:<tesouro>
+    static final String ATACAR = "ATACAR:";
 
     @Override
     public void actionPerformed(ActionEvent e) {

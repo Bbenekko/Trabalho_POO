@@ -9,8 +9,6 @@ import java.util.List;
 
 import model.ModelFacade;
 
-// Primeira janela: quantos jogadores e a cor e o herdeiro de cada um.
-// O botão "Começar" é tratado pelo Controller.
 public class JanelaInicial extends JFrame {
     private static final int MAX_JOGADORES = 5;
 
@@ -62,7 +60,7 @@ public class JanelaInicial extends JFrame {
                 cor.addItem(s);
             for (String s : opcoesHerdeiro)
                 herdeiro.addItem(s);
-            cor.setSelectedIndex(i % opcoesCor.size());           // começa sem repetição
+            cor.setSelectedIndex(i % opcoesCor.size());
             herdeiro.setSelectedIndex(i % opcoesHerdeiro.size());
             rotulos.add(r);
             cores.add(cor);
@@ -83,7 +81,6 @@ public class JanelaInicial extends JFrame {
         c.gridy++;
         conteudo.add(comecar, c);
 
-        // listener interno da View: só habilita as linhas usadas (sem lambda)
         numero.addActionListener(new TratadorNumero());
         habilitarLinhas();
 

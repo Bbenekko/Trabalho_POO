@@ -3,7 +3,6 @@ package view;
 import javax.swing.*;
 import java.awt.*;
 
-// Janela principal: o mapa e a lateral. Os dois painéis são observadores da fachada.
 public class JanelaJogo extends JFrame {
     private PainelTabuleiro tabuleiro;
     private PainelControles controles;
@@ -20,15 +19,12 @@ public class JanelaJogo extends JFrame {
         add(controles, BorderLayout.EAST);
         pack();
         setLocationRelativeTo(null);
-        // setVisible(true) fica com o Controller, depois da escolha das cartas secretas
     }
 
-    // mensagem simples na lateral, sem caixa de diálogo
     public void mostrarAviso(String texto) {
         controles.mostrarAviso(texto);
     }
 
-    // ---------- usados pelo Controller para registrar os listeners e ler as escolhas ----------
 
     public PainelTabuleiro getPainelTabuleiro() { return tabuleiro; }
     public JButton getBtnAtivarColuna() { return controles.getBtnAtivar(); }
