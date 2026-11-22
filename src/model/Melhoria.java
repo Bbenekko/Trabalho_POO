@@ -31,4 +31,8 @@ class Melhoria {
 	boolean utilizavelNoTurno(int turno) { 
 		return this.turnoDaCompra != turno;
 	}
+
+	int getTurnoDaCompra() {
+		return this.turnoDaCompra;
+	}
 }

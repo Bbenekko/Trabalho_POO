@@ -1,0 +1,20 @@
+INF1636 - Programacao Orientada a Objetos - PUC-Rio
+Trabalho: Herdeiros de Khan (Java Swing, MVC)
+Professor: Ivan Mathias Filho
+
+Componentes do grupo
+  Nome: Bento Bruno Gonçalves      Matricula: 2311122
+  Nome: Caio Nabuco Vogel		   Matricula: 2310878
+  Nome: Oliver Hoerde   		   Matricula: 2310789
+
+Classe que contem o metodo main
+  controller.ControladorJogo
+
+Video de apresentacao (Google Drive)
+  Link: https://drive.google.com/drive/folders/1bI6oVndFE0VRAhON1TnmhtjQWoLz41pU?usp=sharing
+
+Como executar
+  No Eclipse: botao direito em src/controller/ControladorJogo.java > Run As > Java Application.
+  O diretorio de trabalho deve ser a raiz do projeto (as imagens sao lidas de doc/img).
+  Testes: pasta test, JUnit 4 (botao direito em test > Run As > JUnit Test).
+

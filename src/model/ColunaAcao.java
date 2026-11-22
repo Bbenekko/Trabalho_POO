@@ -77,10 +77,15 @@ class ColunaAcao
 		return this.melhorias.size() >= 4;
 	}
 
-	boolean adicionaMelhoria(Melhoria melhoria) {   // p. 12
+	boolean adicionaMelhoria(Melhoria melhoria) {
+		return this.adicionaMelhoria(melhoria, false);
+	}
+
+	// ignorarCor: Jochi pode pôr melhoria de qualquer região em qualquer coluna
+	boolean adicionaMelhoria(Melhoria melhoria, boolean ignorarCor) {
 		if (this.estaCheia())
 			return false;
-		if (this.regiao != null && melhoria.getRegiao() != this.regiao)
+		if (!ignorarCor && this.regiao != null && melhoria.getRegiao() != this.regiao)
 			return false;            
 		this.melhorias.add(melhoria);
 		return true;
@@ -108,5 +113,21 @@ class ColunaAcao
 				n++;
 		}
 		return n;
+	}
+
+	// tesouros virtuais (melhorias de tesouro) utilizáveis neste turno; cada um vale 1 tesouro do tipo dela
+	List<TipoTesouro> tesourosVirtuais(int turnoAtual) {
+		List<TipoTesouro> lista = new ArrayList<TipoTesouro>();
+		for (Melhoria m : this.melhorias)
+			if (m.getTipo() == TipoMelhoria.tesouro_virtual && m.getTesouro() != null && m.utilizavelNoTurno(turnoAtual))
+				lista.add(m.getTesouro());
+		return lista;
+	}
+
+	// recuperação de partida salva: estado e melhorias gravados no arquivo
+	void restaurar(boolean ativada, List<Melhoria> melhorias) {
+		this.ativada = ativada;
+		this.melhorias.clear();
+		this.melhorias.addAll(melhorias);
 	}
 }

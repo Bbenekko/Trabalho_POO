@@ -63,5 +63,8 @@ class Provincia {
 		this.quantidade++;
 		return true;
 	}
-	
+
+	void definirQuantidade(int quantidade) {
+		this.quantidade = quantidade;
+	}
 }

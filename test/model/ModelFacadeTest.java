@@ -70,4 +70,46 @@ public class ModelFacadeTest {
 	public void corInexistenteLancaExcecao() {
 		facade.novoJogo(Arrays.asList("rosa", "azul"), Arrays.asList("altani", "jochi"));
 	}
+
+	@Test(timeout = TIMEOUT)
+	public void rodadaAvancaQuandoTodosJogam() {
+		assertEquals(1, facade.rodadaAtual());
+		assertTrue(facade.ativarColuna(1));        // altani: sem Khan
+		assertEquals(1, facade.rodadaAtual());
+		assertTrue(facade.encerrarTurno());
+		assertEquals(1, facade.rodadaAtual());     // falta o 2º jogador
+		assertTrue(facade.ativarColuna(1));        // chagatai: coluna 2 sem Khan
+		assertTrue(facade.encerrarTurno());
+		assertEquals(2, facade.rodadaAtual());
+		assertEquals(facade.limiteKurultai() - facade.fichaNeutra(), facade.votosParaOFim());
+	}
+
+	@Test(timeout = TIMEOUT)
+	public void altaniUsaSoUmPeaoPorTurno() {
+		assertTrue(facade.ativarColuna(1));        // altani: 2 movimentos e 1 tributo
+		assertTrue(facade.precisaEscolherPeao());
+		assertEquals(-1, facade.peaoDoTurno());
+		assertFalse("Sem escolher o peão, não há ação com peão", facade.pegarTributo(4));
+
+		assertTrue(facade.escolherPeao(1));
+		assertFalse(facade.precisaEscolherPeao());
+		assertEquals(1, facade.peaoDoTurno());
+		assertFalse("A escolha não muda no meio do turno", facade.escolherPeao(0));
+		assertFalse("O outro peão não pode se mover", facade.mover(0, 7));
+		assertTrue(facade.mover(1, 7));
+		assertEquals(7, facade.posicaoDoPeao(0, 1));
+		assertEquals(Tabuleiro.KARAKORUM, facade.posicaoDoPeao(0, 0));
+		assertTrue(facade.encerrarTurno());
+	}
+
+	@Test(timeout = TIMEOUT)
+	public void moverEscolheOPeaoDeAltaniEAEscolhaVaiAteOFimDoTurno() {
+		assertTrue(facade.ativarColuna(1));
+		assertTrue(facade.mover(0, 7));            // primeira ação: o peão 0 passa a ser o do turno
+		assertEquals(0, facade.peaoDoTurno());
+		assertFalse(facade.mover(1, 13));
+		assertTrue(facade.encerrarTurno());
+		assertTrue(facade.ativarColuna(1));        // chagatai (1 peão): nada a escolher
+		assertFalse(facade.precisaEscolherPeao());
+	}
 }

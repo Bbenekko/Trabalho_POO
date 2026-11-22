@@ -61,4 +61,12 @@ class Cidade {
 	boolean foiConquistada() {
 		return this.conquistador != null;
 	}
+
+	// recuperação de partida salva
+	void restaurar(boolean revelada, List<TipoTesouro> tesouros, Jogador conquistador) {
+		this.revelada = revelada;
+		this.tesouros.clear();
+		this.tesouros.addAll(tesouros);
+		this.conquistador = conquistador;
+	}
 }

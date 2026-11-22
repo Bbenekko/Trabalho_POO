@@ -55,6 +55,19 @@ class Estoque {
 		this.tesouros.remove(0);
 		return t;
 	}
-	
-	
+
+	// ---------- recuperação de partida salva ----------
+
+	List<TipoTesouro> getTesouros() {
+		return Collections.unmodifiableList(this.tesouros);
+	}
+
+	void definirTributo(TipoTributo tributo, int quantidade) {
+		this.tributos.put(tributo, quantidade);
+	}
+
+	void definirTesouros(List<TipoTesouro> lista) {
+		this.tesouros.clear();
+		this.tesouros.addAll(lista);
+	}
 }

@@ -1,8 +1,11 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -16,7 +19,9 @@ class Tabuleiro {
 	private Khan khan;
 	private AreaMelhorias areaMelhorias;
 	private TrilhaKurultai trilha;
-	//private List<CartasConselheiroAberto> cartasAbertas = new ArrayList<CartasConselheiroAberto>();
+	private List<CartaConselheiroAberto> cartasAbertas = new ArrayList<CartaConselheiroAberto>();
+	private List<TipoPecaBonus> espacosBonus = new ArrayList<TipoPecaBonus>();   // null = espaço vazio
+	private List<EntregaTesouros> entregas = new ArrayList<EntregaTesouros>();   // mesmo índice do espaço de bônus
 	static final int KARAKORUM = 33;
 
 	
@@ -28,13 +33,38 @@ class Tabuleiro {
 		this.criarMapa();       
 		this.abastecerProvincias(); 
 		this.prepararCidades();   
+		this.prepararCartasAbertas();
+		this.prepararPecasBonus();
+		this.prepararEntregas();
+	}
+
+	// os 7 pergaminhos, na mesma ordem dos espaços de bônus desenhados no mapa
+	private void prepararEntregas() {
+		this.entregas.add(new EntregaTesouros(3, 1, Arrays.asList(TipoTesouro.tecido, TipoTesouro.tecido), 0));
+		this.entregas.add(new EntregaTesouros(10, 1, Arrays.asList(TipoTesouro.ferro, TipoTesouro.ferro), 0));
+		this.entregas.add(new EntregaTesouros(11, 1, Arrays.asList(TipoTesouro.pele, TipoTesouro.pele), 0));
+		this.entregas.add(new EntregaTesouros(KARAKORUM, 2,
+				Arrays.asList(TipoTesouro.ferro, TipoTesouro.pele, TipoTesouro.gado), 0));
+		this.entregas.add(new EntregaTesouros(28, 1, Arrays.asList(TipoTesouro.gado, TipoTesouro.gado), 0));
+		this.entregas.add(new EntregaTesouros(18, 1, Arrays.asList(TipoTesouro.especiarias, TipoTesouro.especiarias), 0));
+		this.entregas.add(new EntregaTesouros(29, 1, new ArrayList<TipoTesouro>(), 3));
+	}
+
+	EntregaTesouros getEntrega(int espaco) {
+		if (espaco < 0 || espaco >= this.entregas.size())
+			return null;
+		return this.entregas.get(espaco);
+	}
+
+	// tira a peça do espaço (fica vazio); null se já foi pega
+	TipoPecaBonus retirarPecaBonus(int espaco) {
+		TipoPecaBonus t = this.espacosBonus.get(espaco);
+		this.espacosBonus.set(espaco, null);
+		return t;
 	}
 	
 	private void criarMapa() {
-		
-		// Para ajudar a visualização veja a imagem em https://github.com/Bbenekko/Trabalho_POO/blob/main/doc/img/Mapa_identidades.png
-		
-		// Cidades
+
 		Cidade kiev = new Cidade("Kiev", Regiao.russia);
 		Cidade moscou = new Cidade("Moscou", Regiao.russia);
 		Cidade sarai = new Cidade("Sarai", Regiao.russia);
@@ -54,7 +84,6 @@ class Tabuleiro {
 		this.cidades.put("Kaesong",kaesong);
 		this.cidades.put("Cantao",cantao);
 		
-		// Provincias do canto superior esquerdo
 		Provincia a = new Provincia(0,TipoTributo.yurt, true);
 		Provincia b = new Provincia(1,TipoTributo.espada, false);
 		Provincia c = new Provincia(2,TipoTributo.moeda, false);
@@ -64,7 +93,6 @@ class Tabuleiro {
 		this.provincias.put(1, b);
 		this.provincias.put(2, c);
 		
-		//Provincias do canto superior direito
 		Provincia d = new Provincia(3,TipoTributo.yurt, false);
 		Provincia e = new Provincia(4,TipoTributo.moeda, true);
 		Provincia f = new Provincia(5,TipoTributo.espada, false);
@@ -74,7 +102,6 @@ class Tabuleiro {
 		this.provincias.put(4, e);
 		this.provincias.put(5, f);
 		
-		//Provincias do canto inferior esquerdo
 		Provincia g = new Provincia(6,TipoTributo.espada, false);
 		Provincia h = new Provincia(7,TipoTributo.moeda, true);
 		Provincia i = new Provincia(8,TipoTributo.yurt, false);
@@ -84,7 +111,6 @@ class Tabuleiro {
 		this.provincias.put(7, h);
 		this.provincias.put(8, i);
 		
-		//Provincias do canto inferior direito
 		Provincia j = new Provincia(9,TipoTributo.espada, false);
 		Provincia k = new Provincia(10,TipoTributo.yurt, true);
 		Provincia l = new Provincia(11,TipoTributo.moeda, false);
@@ -93,9 +119,7 @@ class Tabuleiro {
 		this.provincias.put(9, j);
 		this.provincias.put(10, k);
 		this.provincias.put(11, l);
-		
-		//Paradas da regiao da Russia começando na ordem de criacao (Kiev - dupla - moscou - sarai - dupla) da esquerda para a direita e de cima para baixo
-		
+
 		Parada p00 = new Parada(0,TipoParada.simples,Regiao.russia);
 		Parada p01 = new Parada(1,TipoParada.simples,Regiao.russia);
 		Parada p02 = new Parada(2,TipoParada.simples,Regiao.russia);
@@ -112,8 +136,6 @@ class Tabuleiro {
 		
 		Parada p10 = new Parada(10,TipoParada.dupla,Regiao.russia);
 		
-		//Paradas da regiao da Persia começando na ordem de criacao (dupla - samarcanda - bagda - dupla - cabul) da esquerda para a direita e de cima para baixo
-		
 		Parada p11 = new Parada(11,TipoParada.dupla,Regiao.persia);
 
 		Parada p12 = new Parada(12,TipoParada.simples,Regiao.persia);
@@ -129,9 +151,6 @@ class Tabuleiro {
 		Parada p19 = new Parada(19,TipoParada.simples,Regiao.persia);
 		Parada p20 = new Parada(20,TipoParada.simples,Regiao.persia);
 		Parada p21 = new Parada(21,TipoParada.simples,Regiao.persia);
-		
-		
-		//Paradas da regiao da China começando na ordem de criacao (Kaesong - Pequim - dupla - dupla - cantao) da esquerda para a direita e de cima para baixo
 
 		Parada p22 = new Parada(22,TipoParada.simples,Regiao.china);
 		Parada p23 = new Parada(23,TipoParada.simples,Regiao.china);
@@ -148,13 +167,9 @@ class Tabuleiro {
 		Parada p30 = new Parada(30,TipoParada.simples,Regiao.china);
 		Parada p31 = new Parada(31,TipoParada.simples,Regiao.china);
 		Parada p32 = new Parada(32,TipoParada.simples,Regiao.china);
-		
-		//Parada do Karakorum
-		
+
 		Parada karakorum = new Parada(KARAKORUM,TipoParada.karakorum,null);
 
-		//Conexões entre as paradas, cidades e provincias
-		
 		p00.adicionarVizinha(p01);
 		p00.adicionarVizinha(p02);
 		p00.adicionarCidade(kiev);
@@ -443,6 +458,26 @@ class Tabuleiro {
 		return this.estoque;
 	}
 	
+	// número de passos (rotas) entre duas paradas; Integer.MAX_VALUE se não houver caminho
+	int distancia(Parada origem, Parada destino) {
+		Map<Parada, Integer> dist = new HashMap<Parada, Integer>();
+		LinkedList<Parada> fila = new LinkedList<Parada>();
+		dist.put(origem, 0);
+		fila.add(origem);
+		while (!fila.isEmpty()) {
+			Parada u = fila.removeFirst();
+			if (u == destino)
+				return dist.get(u);
+			for (Parada v : u.getVizinhas()) {
+				if (!dist.containsKey(v) && this.saoAdjacentes(u, v)) {
+					dist.put(v, dist.get(u) + 1);
+					fila.addLast(v);
+				}
+			}
+		}
+		return Integer.MAX_VALUE;
+	}
+
 	boolean saoAdjacentes(Parada a, Parada b) {
 		List<Parada> a_vizinhos = new ArrayList<Parada>();
 		List<Parada> b_vizinhos = new ArrayList<Parada>();
@@ -501,5 +536,67 @@ class Tabuleiro {
 				return false;
 		}
 		return true;
+	}
+
+	private void prepararCartasAbertas() {
+		List<TipoConselheiroAberto> tipos = new ArrayList<TipoConselheiroAberto>();
+		for (TipoConselheiroAberto tipo : TipoConselheiroAberto.values())
+			tipos.add(tipo);
+		Collections.shuffle(tipos);
+		for (int i = 0; i < 4; i++)
+			this.cartasAbertas.add(new CartaConselheiroAberto(tipos.get(i)));
+	}
+
+	List<CartaConselheiroAberto> getCartasAbertas() {
+		return Collections.unmodifiableList(this.cartasAbertas);
+	}
+
+	Collection<Parada> getParadas() {
+		return Collections.unmodifiableCollection(this.paradas.values());
+	}
+
+	Collection<Provincia> getProvincias() {
+		return Collections.unmodifiableCollection(this.provincias.values());
+	}
+
+	Collection<Cidade> getCidades() {
+		return Collections.unmodifiableCollection(this.cidades.values());
+	}
+
+	private void prepararPecasBonus() {
+		for (TipoPecaBonus tipo : TipoPecaBonus.values())
+			this.espacosBonus.add(tipo);
+		Collections.shuffle(this.espacosBonus);
+	}
+
+	int numeroDeEspacosBonus() {
+		return this.espacosBonus.size();
+	}
+
+	TipoPecaBonus pecaBonusNoEspaco(int espaco) {
+		return this.espacosBonus.get(espaco);
+	}
+
+	// ---------- recuperação de partida salva ----------
+
+	// cidades ainda escondidas, da base (índice 0) para o topo
+	List<Cidade> getPilhaCidades() {
+		return Collections.unmodifiableList(this.pilhaCidades);
+	}
+
+	void restaurarPilhaCidades(List<Cidade> pilha) {
+		this.pilhaCidades.clear();
+		for (Cidade c : pilha)
+			this.pilhaCidades.push(c);
+	}
+
+	void restaurarCartasAbertas(List<CartaConselheiroAberto> cartas) {
+		this.cartasAbertas.clear();
+		this.cartasAbertas.addAll(cartas);
+	}
+
+	void restaurarPecasBonus(List<TipoPecaBonus> espacos) {
+		this.espacosBonus.clear();
+		this.espacosBonus.addAll(espacos);
 	}
 }

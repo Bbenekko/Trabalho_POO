@@ -60,6 +60,10 @@ class AreaMelhorias {
 	    return this.expostas.remove(posicao);  
 	}
 	
+	Melhoria verTopo() {
+		return this.pilha.isEmpty() ? null : this.pilha.peek();
+	}
+
 	Melhoria comprarDoTopo(){
 		if (this.pilha.isEmpty())
 			return null;
@@ -78,5 +82,20 @@ class AreaMelhorias {
 		while (this.expostas.size() < 5 && !this.pilha.isEmpty()) {
 			this.expostas.add(this.pilha.pop());
 		}
+	}
+
+	// ---------- recuperação de partida salva ----------
+
+	// pilha de baixo (índice 0) para o topo
+	List<Melhoria> getPilha() {
+		return Collections.unmodifiableList(this.pilha);
+	}
+
+	void restaurar(List<Melhoria> expostas, List<Melhoria> pilha) {
+		this.expostas.clear();
+		this.expostas.addAll(expostas);
+		this.pilha.clear();
+		for (Melhoria m : pilha)
+			this.pilha.push(m);
 	}
 }

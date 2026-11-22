@@ -6,11 +6,12 @@ import java.util.List;
 
 class TabuleiroJogador 
 {
-	// ordem fixa: 0 = amarela (russia), 1 = verde (persia), 2 = vermelha (china), 3 = branca
 	private List<ColunaAcao> colunas = new ArrayList<ColunaAcao>();
+	private boolean qualquerCor;      // Jochi: não precisa seguir a cor das melhorias
 	
 	TabuleiroJogador(Herdeiro herdeiro)
 	{
+		this.qualquerCor = (herdeiro == Herdeiro.jochi);
 		List<TipoAcao> c0 = new ArrayList<TipoAcao>();
 		List<TipoAcao> c1 = new ArrayList<TipoAcao>();
 		List<TipoAcao> c2 = new ArrayList<TipoAcao>();
@@ -115,9 +116,10 @@ class TabuleiroJogador
 			throw new IllegalArgumentException("Escolha não permitida de Khan ");
 		}
 				
-		this.colunas.add(new ColunaAcao(Regiao.russia, c0));
+		// mesma ordem da cartela impressa: vermelha (China), verde (Pérsia), amarela (Rússia) e branca
+		this.colunas.add(new ColunaAcao(Regiao.china,  c0));
 		this.colunas.add(new ColunaAcao(Regiao.persia, c1));
-		this.colunas.add(new ColunaAcao(Regiao.china,  c2));
+		this.colunas.add(new ColunaAcao(Regiao.russia, c2));
 		this.colunas.add(new ColunaAcao(null,          c3));
 	}
 
@@ -139,7 +141,11 @@ class TabuleiroJogador
 	}
 	
 	boolean adicionarMelhoria(Melhoria m, int coluna) {
-		return this.colunas.get(coluna).adicionaMelhoria(m);
+		return this.colunas.get(coluna).adicionaMelhoria(m, this.qualquerCor);
+	}
+
+	boolean aceitaQualquerCor() {
+		return this.qualquerCor;
 	}
 	
 	boolean linhaCompleta(int linha) {       

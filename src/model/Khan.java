@@ -43,5 +43,10 @@ class Khan {
 		}
 		return false;
 	}
-	
+
+	// recuperação de partida salva
+	void restaurar(Provincia provincia, boolean naAreaDeMelhorias) {
+		this.provincia = provincia;
+		this.naAreaDeMelhorias = naAreaDeMelhorias;
+	}
 }
