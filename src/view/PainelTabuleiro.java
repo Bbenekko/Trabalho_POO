@@ -93,7 +93,15 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
     private static final int MEDIR_CIDADES = 4;
     private static final int MEDIR_MELHORIAS = 5;
     private static final int MEDIR_BONUS = 6;
+    private static final int MEDIR_TRILHA = 7;      // 17 cliques: os círculos da trilha, da cadeira (0) até o 16
     private static final int MODO_MEDICAO = NADA;
+
+    // trilha do Kurultai: a casa 0 é a da cadeira, onde todas as fichas começam; os marcos de fim
+    // impressos ficam nas casas 9 (2 jogadores), 13 (3), 15 (4) e 16 (5)
+    private static final int ULTIMA_CASA_TRILHA = 16;
+    private static final int FICHA_TRILHA = 110;         // diâmetro da ficha, em pixels da imagem original
+    private static final int DESLOCAMENTO_PILHA = 42;    // quanto cada ficha empilhada sobe
+    private static final int RAIO_CASA_TRILHA = 85;
 
     private ModelFacade modelo = ModelFacade.getInstance();
     private double escala;
@@ -114,6 +122,8 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
     private Map<Integer, Point> posicoesMelhorias = new HashMap<Integer, Point>();
     private Map<String, Image> imgBonus = new HashMap<String, Image>();
     private Map<Integer, Point> posicoesBonus = new HashMap<Integer, Point>();
+    private Map<Integer, Point> posicoesTrilha = new HashMap<Integer, Point>();        // casa do Kurultai → centro
+    private Map<String, Image> fichasTrilha = new HashMap<String, Image>();            // cor → ficha desenhada
     private List<Integer> paraMedir = new ArrayList<Integer>();
     private List<String> cidadesParaMedir = new ArrayList<String>();
     private Map<String, Rectangle> areasDosPeoes = new HashMap<String, Rectangle>();
@@ -131,13 +141,14 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         carregarPosicoesCidades();
         carregarPosicoesMelhorias();
         carregarPosicoesBonus();
+        carregarPosicoesTrilha();
         calcularCentros();
         setPreferredSize(new Dimension(largura, altura));
         if (MODO_MEDICAO != NADA)
             addMouseListener(new MedidorClique());
         if (MODO_MEDICAO == MEDIR_KHAN || MODO_MEDICAO == MEDIR_TRIBUTOS
                 || MODO_MEDICAO == MEDIR_CIDADES || MODO_MEDICAO == MEDIR_MELHORIAS
-                || MODO_MEDICAO == MEDIR_BONUS)
+                || MODO_MEDICAO == MEDIR_BONUS || MODO_MEDICAO == MEDIR_TRILHA)
             prepararMedicao();
 
         ControladorJogo.getInstance().registra(this);
@@ -386,6 +397,29 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
     	posicoesMelhorias.put(0, new Point(1354, 2802));
     }
 
+    // centro de cada casa da trilha do Kurultai, medido com MODO_MEDICAO = MEDIR_TRILHA.
+    // 0 = a cadeira (todas começam nela); de 0 a 9 a fileira de cima (da esquerda para a direita),
+    // de 10 a 16 a de baixo (da direita para a esquerda)
+    private void carregarPosicoesTrilha() {
+        posicoesTrilha.put(0, new Point(1150, 2630));
+        posicoesTrilha.put(1, new Point(1330, 2630));
+        posicoesTrilha.put(2, new Point(1515, 2630));
+        posicoesTrilha.put(3, new Point(1695, 2630));
+        posicoesTrilha.put(4, new Point(1880, 2630));
+        posicoesTrilha.put(5, new Point(2065, 2630));
+        posicoesTrilha.put(6, new Point(2250, 2630));
+        posicoesTrilha.put(7, new Point(2435, 2630));
+        posicoesTrilha.put(8, new Point(2615, 2630));
+        posicoesTrilha.put(9, new Point(2800, 2630));
+        posicoesTrilha.put(10, new Point(2720, 2795));
+        posicoesTrilha.put(11, new Point(2540, 2795));
+        posicoesTrilha.put(12, new Point(2355, 2795));
+        posicoesTrilha.put(13, new Point(2165, 2795));
+        posicoesTrilha.put(14, new Point(1985, 2795));
+        posicoesTrilha.put(15, new Point(1790, 2795));
+        posicoesTrilha.put(16, new Point(1610, 2795));
+    }
+
     private void carregarPosicoesBonus() {
     	posicoesBonus.put(0, new Point(1381, 166));
     	posicoesBonus.put(1, new Point(2415, 286));
@@ -506,6 +540,7 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
             desenharYurts(g2);                         
             desenharPeoes(g2);
             desenharKhan(g2);
+            desenharTrilha(g2);
         }
         if (MODO_MEDICAO != NADA)
             desenharPontosMedidos(g2);
@@ -614,6 +649,70 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         }
     }
 
+    // trilha do Kurultai: uma ficha por jogador na casa dos seus votos e a ficha branca na casa do
+    // total de votos (ficha neutra). Fichas na mesma casa são empilhadas, cada uma um pouco acima da
+    // anterior, para todas ficarem visíveis. O marco de fim do número de jogadores ganha um anel vermelho.
+    private void desenharTrilha(Graphics2D g2) {
+        Point marco = posicoesTrilha.get(Math.min(modelo.limiteKurultai(), ULTIMA_CASA_TRILHA));
+        if (marco != null) {
+            Point m = naTela(marco);
+            int r = (int) (RAIO_CASA_TRILHA * escala);
+            g2.setColor(new Color(200, 20, 20));
+            g2.setStroke(new BasicStroke(3f));
+            g2.drawOval(m.x - r, m.y - r, 2 * r, 2 * r);
+            g2.setStroke(new BasicStroke(1f));
+        }
+
+        Map<Integer, Integer> naCasa = new HashMap<Integer, Integer>();
+        empilharNaTrilha(g2, "branco", modelo.fichaNeutra(), naCasa);    // a neutra fica embaixo
+        for (int j = 0; j < modelo.numeroDeJogadores(); j++)
+            empilharNaTrilha(g2, modelo.corDoJogador(j), modelo.votosDe(j), naCasa);
+    }
+
+    private void empilharNaTrilha(Graphics2D g2, String cor, int casa, Map<Integer, Integer> naCasa) {
+        casa = Math.max(0, Math.min(casa, ULTIMA_CASA_TRILHA));   // além do fim, fica na última casa
+        Point p = posicoesTrilha.get(casa);
+        if (p == null)
+            return;
+        int n = naCasa.getOrDefault(casa, 0);
+        naCasa.put(casa, n + 1);
+        Point c = naTela(p);
+        Image ficha = fichaTrilha(cor);
+        int y = c.y - (int) (n * DESLOCAMENTO_PILHA * escala);
+        g2.drawImage(ficha, c.x - ficha.getWidth(null) / 2, y - ficha.getHeight(null) / 2, null);
+    }
+
+    // ficha redonda vista de lado (um cilindro baixo), da cor do jogador ou branca para a neutra
+    private Image fichaTrilha(String cor) {
+        Image pronta = fichasTrilha.get(cor);
+        if (pronta != null)
+            return pronta;
+        int d = px(FICHA_TRILHA);
+        int alturaTopo = d * 3 / 5;
+        int lado = Math.max(4, d / 6);
+        java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(d + 2, alturaTopo + lado + 2,
+                java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = img.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        Color base = Desenhos.cor(cor);
+        // lateral
+        g.setColor(base.darker());
+        g.fillRect(1, alturaTopo / 2 + 1, d - 1, lado);
+        g.fillOval(1, lado + 1, d - 1, alturaTopo);
+        // topo
+        g.setColor(base);
+        g.fillOval(1, 1, d - 1, alturaTopo);
+        g.setColor(Color.BLACK);
+        g.setStroke(new BasicStroke(1.4f));
+        g.drawOval(1, 1, d - 1, alturaTopo);
+        g.drawArc(1, lado + 1, d - 1, alturaTopo, 180, 180);
+        g.drawLine(1, alturaTopo / 2 + 1, 1, alturaTopo / 2 + lado + 1);
+        g.drawLine(d, alturaTopo / 2 + 1, d, alturaTopo / 2 + lado + 1);
+        g.dispose();
+        fichasTrilha.put(cor, img);
+        return img;
+    }
+
     private void desenharKhan(Graphics2D g2) {
         Point ponto = null;
         if (modelo.khanNasMelhorias())
@@ -680,6 +779,8 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
             pontos = posicoesMelhorias;
         else if (MODO_MEDICAO == MEDIR_BONUS)
             pontos = posicoesBonus;
+        else if (MODO_MEDICAO == MEDIR_TRILHA)
+            pontos = posicoesTrilha;
         if (MODO_MEDICAO == MEDIR_CIDADES) {
             for (String nome : posicoesCidades.keySet()) {
                 Point p = naTela(posicoesCidades.get(nome));
@@ -712,7 +813,7 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
     }
 
     private void prepararMedicao() {
-        if (MODO_MEDICAO == MEDIR_BONUS) {
+        if (MODO_MEDICAO == MEDIR_BONUS || MODO_MEDICAO == MEDIR_TRILHA) {
             avisarProxima();
             return;
         }
@@ -734,6 +835,13 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
     }
 
     private void medir(int x, int y) {
+        if (MODO_MEDICAO == MEDIR_TRILHA) {
+            if (proximoId <= ULTIMA_CASA_TRILHA)
+                System.out.println("posicoesTrilha.put(" + proximoId + ", new Point(" + x + ", " + y + "));");
+            proximoId++;
+            avisarProxima();
+            return;
+        }
         if (MODO_MEDICAO == MEDIR_BONUS) {
             if (proximoId < modelo.numeroDeEspacosBonus())
                 System.out.println("posicoesBonus.put(" + proximoId + ", new Point(" + x + ", " + y + "));");
@@ -769,6 +877,14 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
     }
 
     private void avisarProxima() {
+        if (MODO_MEDICAO == MEDIR_TRILHA) {
+            if (proximoId <= ULTIMA_CASA_TRILHA)
+                System.out.println("Agora clique no centro da casa " + proximoId + " da trilha do Kurultai"
+                        + (proximoId == 0 ? " (a da cadeira)" : ""));
+            else
+                System.out.println("Pronto: copie as linhas acima");
+            return;
+        }
         if (MODO_MEDICAO == MEDIR_BONUS) {
             if (proximoId < modelo.numeroDeEspacosBonus())
                 System.out.println("Agora clique no centro do espaço de bônus " + (proximoId + 1)

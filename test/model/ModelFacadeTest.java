@@ -70,4 +70,17 @@ public class ModelFacadeTest {
 	public void corInexistenteLancaExcecao() {
 		facade.novoJogo(Arrays.asList("rosa", "azul"), Arrays.asList("altani", "jochi"));
 	}
+
+	@Test(timeout = TIMEOUT)
+	public void rodadaAvancaQuandoTodosJogam() {
+		assertEquals(1, facade.rodadaAtual());
+		assertTrue(facade.ativarColuna(1));        // altani: sem Khan
+		assertEquals(1, facade.rodadaAtual());
+		assertTrue(facade.encerrarTurno());
+		assertEquals(1, facade.rodadaAtual());     // falta o 2º jogador
+		assertTrue(facade.ativarColuna(1));        // chagatai: coluna 2 sem Khan
+		assertTrue(facade.encerrarTurno());
+		assertEquals(2, facade.rodadaAtual());
+		assertEquals(facade.limiteKurultai() - facade.fichaNeutra(), facade.votosParaOFim());
+	}
 }

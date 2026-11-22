@@ -52,6 +52,11 @@ class Turno {
 		return this.khanUsado;
 	}
 
+	// moedas, espadas ou fichas de yurt virtuais que ainda restam neste turno (somem ao encerrar)
+	int getVirtuais(TipoTributo tipo) {
+		return this.virtuais.get(tipo);
+	}
+
 
 	// ---------- MOVER ----------
 	boolean podeMover(Peao peao, List<Parada> caminho) {

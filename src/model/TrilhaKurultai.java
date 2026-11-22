@@ -9,11 +9,12 @@ class TrilhaKurultai {
 	private int limite;
 	
 	TrilhaKurultai(int numJogadores) {
+		// casa do marco impresso na trilha (a cadeira é a casa 0): a ficha neutra chegar nele dispara o fim
 		switch (numJogadores) {
-			case 2: this.limite = 10; break;
-			case 3: this.limite = 14; break;
-			case 4: this.limite = 16; break;
-			case 5: this.limite = 17; break;
+			case 2: this.limite = 9; break;
+			case 3: this.limite = 13; break;
+			case 4: this.limite = 15; break;
+			case 5: this.limite = 16; break;
 			default:
 				throw new IllegalArgumentException("O jogo é para 2 a 5 jogadores: " + numJogadores);
 		}

@@ -212,4 +212,11 @@ class Jogo {
 	void definirOpcoesSecretas(Jogador j, List<CartaConselheiroSecreto> duas) {
 		this.opcoesSecretas.put(j, new ArrayList<CartaConselheiroSecreto>(duas));
 	}
+
+	// rodada atual, começando em 1: numeroDoTurno conta os turnos já iniciados e cada rodada tem
+	// um turno de cada jogador, sempre na mesma ordem
+	int rodadaAtual() {
+		int jogados = (this.turnoAtual != null) ? this.numeroDoTurno - 1 : this.numeroDoTurno;
+		return jogados / this.jogadores.size() + 1;
+	}
 }

@@ -17,9 +17,11 @@ public class TrilhaKurultaiTest {
 	}
 
 	@Test(timeout = TIMEOUT)
-	public void fimDisparadoCom14VotosDistribuidosEm3Jogadores() {
+	public void fimDisparadoCom13VotosDistribuidosEm3Jogadores() {
 		trilha.registrarVotos(vermelho, 7);
-		trilha.registrarVotos(azul, 7);
-		assertTrue("Ficha neutra em 14 dispara o fim com 3 jogadores", trilha.fimDisparado());
+		trilha.registrarVotos(azul, 5);
+		assertFalse("Com 12 votos a ficha neutra ainda não chegou ao marco de 3 jogadores", trilha.fimDisparado());
+		trilha.registrarVotos(azul, 1);
+		assertTrue("Ficha neutra no marco (casa 13) dispara o fim com 3 jogadores", trilha.fimDisparado());
 	}
 }

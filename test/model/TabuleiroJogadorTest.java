@@ -6,7 +6,7 @@ import org.junit.Test;
 
 public class TabuleiroJogadorTest {
 	private static final int TIMEOUT = 2000;
-	private static final int AMARELA = 0, VERDE = 1, VERMELHA = 2, BRANCA = 3;
+	private static final int VERMELHA = 0, VERDE = 1, AMARELA = 2, BRANCA = 3;
 	private TabuleiroJogador tabuleiro;
 
 	@Before

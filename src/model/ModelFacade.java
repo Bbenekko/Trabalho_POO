@@ -281,6 +281,13 @@ public class ModelFacade implements ObservadoIF {
 		return (turno == null) ? 0 : turno.getTributosRestantes();
 	}
 
+	// recursos virtuais (moeda, espada ou yurt) que ainda restam no turno em andamento; 0 fora de turno
+	public int virtuaisNoTurno(String tipo) {
+		Turno turno = this.jogo().getTurnoAtual();
+		TipoTributo t = enumOuNull(TipoTributo.class, tipo);
+		return (turno == null || t == null) ? 0 : turno.getVirtuais(t);
+	}
+
 	public boolean khanUsado() {
 		Turno turno = this.jogo().getTurnoAtual();
 		return turno != null && turno.isKhanUsado();
@@ -387,6 +394,15 @@ public class ModelFacade implements ObservadoIF {
 
 	public int fichaNeutra() {
 		return this.tabuleiro().getTrilha().getFichaNeutra();
+	}
+
+	public int rodadaAtual() {
+		return this.jogo().rodadaAtual();
+	}
+
+	// quantos votos ainda faltam para a ficha neutra chegar ao marco de fim (0 se já chegou)
+	public int votosParaOFim() {
+		return Math.max(0, this.limiteKurultai() - this.fichaNeutra());
 	}
 
 	public int limiteKurultai() {

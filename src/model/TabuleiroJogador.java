@@ -114,9 +114,10 @@ class TabuleiroJogador
 			throw new IllegalArgumentException("Escolha não permitida de Khan ");
 		}
 				
-		this.colunas.add(new ColunaAcao(Regiao.russia, c0));
+		// mesma ordem da cartela impressa: vermelha (China), verde (Pérsia), amarela (Rússia) e branca
+		this.colunas.add(new ColunaAcao(Regiao.china,  c0));
 		this.colunas.add(new ColunaAcao(Regiao.persia, c1));
-		this.colunas.add(new ColunaAcao(Regiao.china,  c2));
+		this.colunas.add(new ColunaAcao(Regiao.russia, c2));
 		this.colunas.add(new ColunaAcao(null,          c3));
 	}
 

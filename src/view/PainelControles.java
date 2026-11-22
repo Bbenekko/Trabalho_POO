@@ -2,7 +2,9 @@ package view;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import controller.ControladorJogo;
 import model.ModelFacade;
@@ -13,29 +15,66 @@ class PainelControles extends JPanel implements ObservadorIF {
     static final int LARGURA = 300;
     private static final int ALTURA_INDICADOR = 40;
     private static final int MARGEM = 12;
+    private static final int LARGURA_LINHA = LARGURA - 2 * MARGEM;
+    private static final int PECA_PEQUENA = 18;
+    private static final Color COR_ALERTA = new Color(180, 0, 0);
+    private static final Color COR_DICA = new Color(110, 110, 110);
+    private static final String[] TRIBUTOS = {"moeda", "espada", "yurt"};
+    private static final String[] TESOUROS = {"pele", "tecido", "gado", "ferro", "especiarias"};
+
+    // ícones da lateral: os mesmos arquivos do tabuleiro (sem arquivo, usa o desenho gerado)
+    private static final String IMG_MOEDA = "doc/img/cartoes/cartoes6/cartoes6-3.png";
+    private static final String IMG_ESPADA = "doc/img/cartoes/cartoes6/cartoes6-2.png";
+    private static final String IMG_YURT = "doc/img/cartoes/cartoes6/cartoes6-1.png";
+    private static final String IMG_PELE = "doc/img/cartoes/cartoes7/cartoes7-4.png";
+    private static final String IMG_TECIDO = "doc/img/cartoes/cartoes7/cartoes7-2.png";
+    private static final String IMG_GADO = "doc/img/cartoes/cartoes7/cartoes7-1.png";
+    private static final String IMG_FERRO = "doc/img/cartoes/cartoes7/cartoes7-3.png";
+    private static final String IMG_ESPECIARIAS = "doc/img/cartoes/cartoes7/cartoes7-5.png";
+    private static final String IMG_MOVIMENTOS = "doc/img/cartoes/cartoes3/cartoes3-1.jpg";   // cavalos
+    private static final String IMG_ACOES_TRIBUTO = "doc/img/cartoes/cartoes3/cartoes3-6.jpg"; // mãos
+    private static final String IMG_VOTOS = "doc/img/cartoes/cartoes3/cartoes3-2.jpg";        // cadeira
+    private static final String IMG_BONUS_CAVALOS = "doc/img/cartoes/cartoes3/cartoes3-1.jpg";
+    private static final String IMG_BONUS_VOTO = "doc/img/cartoes/cartoes3/cartoes3-2.jpg";
+    private static final String IMG_BONUS_YURTS = "doc/img/cartoes/cartoes3/cartoes3-3.jpg";
+    private static final String IMG_BONUS_ESPADAS = "doc/img/cartoes/cartoes3/cartoes3-4.jpg";
+    private static final String IMG_BONUS_TESOURO = "doc/img/cartoes/cartoes3/cartoes3-5.jpg";
+    private static final String IMG_BONUS_MAOS = "doc/img/cartoes/cartoes3/cartoes3-6.jpg";
+    private static final String IMG_BONUS_MOEDAS = "doc/img/cartoes/cartoes3/cartoes3-7.jpg";
 
     private ModelFacade modelo = ModelFacade.getInstance();
+    private Map<String, Image> icones = new HashMap<String, Image>();
 
     private JLabel lblJogador = new JLabel();
-    private JLabel lblTurno = new JLabel();
-    private JLabel lblRecursos = new JLabel();
-    private JLabel lblTesouros = new JLabel();
-    private JLabel lblVotos = new JLabel();
-    private JLabel lblKhan = new JLabel();
+
+    // recursos do jogador (ficam de um turno para o outro)
+    private LinhaIcones linhaTributos = new LinhaIcones(LARGURA_LINHA);
+    private LinhaIcones linhaTesouros = new LinhaIcones(LARGURA_LINHA);
+    private LinhaIcones linhaReserva = new LinhaIcones(LARGURA_LINHA);
+    // só valem no turno em andamento
+    private LinhaIcones linhaAcoes = new LinhaIcones(LARGURA_LINHA);
+    private LinhaIcones linhaVirtuais = new LinhaIcones(LARGURA_LINHA);
+    private LinhaIcones linhaSituacao = new LinhaIcones(LARGURA_LINHA);
+    // informações gerais da partida
+    private LinhaIcones linhaRodada = new LinhaIcones(LARGURA_LINHA);
+    private LinhaIcones linhaVotos = new LinhaIcones(LARGURA_LINHA);
+    private LinhaIcones linhaKurultai = new LinhaIcones(LARGURA_LINHA);
+    private LinhaIcones linhaFim = new LinhaIcones(LARGURA_LINHA);
+    private LinhaIcones linhaKhan = new LinhaIcones(LARGURA_LINHA);
 
     private JComboBox<String> colunas = new JComboBox<String>();
     private JButton ativar = new JButton("Ativar coluna");
     private JComboBox<String> modos = new JComboBox<String>();
-    private JButton khanMelhorias = new JButton("Khan nas melhorias");
+    private JButton khanMelhorias = new JButton("Khan → melhorias");
     private JButton encerrar = new JButton("Encerrar turno");
 
     private JComboBox<String> melhorias = new JComboBox<String>();
     private JComboBox<String> colunaDestino = new JComboBox<String>();
-    private JButton comprar = new JButton("Comprar (2 moedas)");
+    private JButton comprar = new JButton("Comprar");
     private JButton gratis = new JButton("Pegar grátis");
 
-    private JButton verCartela = new JButton("Ver minha cartela");
-    private JButton verCartas = new JButton("Ver cartas de conselheiro");
+    private JButton verCartela = new JButton("Minha cartela");
+    private JButton verCartas = new JButton("Cartas");
     private JButton salvar = new JButton("Salvar partida...");
     private JLabel lblAviso = new JLabel(" ");
 
@@ -51,40 +90,51 @@ class PainelControles extends JPanel implements ObservadorIF {
         modos.addItem("Clique constrói yurt");
         modos.addItem("Clique entrega tesouros");
 
+        carregarIcones();
         lblJogador.setFont(new Font("SansSerif", Font.BOLD, 15));
         lblAviso.setForeground(new Color(180, 0, 0));
         lblAviso.setVerticalAlignment(SwingConstants.TOP);
 
         add(Box.createRigidArea(new Dimension(0, ALTURA_INDICADOR + 8)));
         adicionar(lblJogador);
-        adicionar(lblTurno);
-        adicionar(lblRecursos);
-        adicionar(lblTesouros);
-        adicionar(lblVotos);
-        adicionar(lblKhan);
 
+        adicionar(secao("Recursos", null));
+        adicionar(linhaTributos);
+        adicionar(linhaTesouros);
+        adicionar(linhaReserva);
+
+        adicionar(secao("Neste turno", "somem ao encerrar"));
+        adicionar(linhaAcoes);
+        adicionar(linhaVirtuais);
+        adicionar(linhaSituacao);
+
+        adicionar(secao("Partida", null));
+        adicionar(linhaRodada);
+        adicionar(linhaVotos);
+        adicionar(linhaKurultai);
+        adicionar(linhaFim);
+        adicionar(linhaKhan);
+
+        // botões do mesmo grupo lado a lado, para a lateral caber em telas mais baixas
         adicionar(titulo("Turno"));
         adicionar(colunas);
         adicionar(ativar);
-        adicionar(espaco(4));
+        adicionar(espaco(3));
         adicionar(modos);
-        adicionar(espaco(4));
-        adicionar(khanMelhorias);
-        adicionar(encerrar);
+        adicionar(espaco(3));
+        adicionar(lado(khanMelhorias, encerrar));
 
-        adicionar(titulo("Melhorias expostas"));
+        comprar.setToolTipText("Custa 2 moedas; a melhoria vai para a coluna escolhida acima");
+        adicionar(titulo("Melhorias expostas (compra: 2 moedas)"));
         adicionar(melhorias);
         adicionar(colunaDestino);
-        adicionar(comprar);
-        adicionar(gratis);
+        adicionar(lado(comprar, gratis));
 
-        adicionar(titulo("Consultas"));
-        adicionar(verCartela);
-        adicionar(verCartas);
-
-        adicionar(titulo("Partida"));
+        adicionar(titulo("Consultas e partida"));
+        adicionar(lado(verCartela, verCartas));
+        adicionar(espaco(3));
         adicionar(salvar);
-        adicionar(espaco(10));
+        adicionar(espaco(6));
         adicionar(lblAviso);
         add(Box.createVerticalGlue());
 
@@ -95,8 +145,70 @@ class PainelControles extends JPanel implements ObservadorIF {
     private JLabel titulo(String texto) {
         JLabel l = new JLabel(texto);
         l.setFont(new Font("SansSerif", Font.BOLD, 13));
-        l.setBorder(BorderFactory.createEmptyBorder(12, 0, 4, 0));
+        l.setBorder(BorderFactory.createEmptyBorder(8, 0, 3, 0));
         return l;
+    }
+
+    // dois botões dividindo a largura da lateral
+    private JPanel lado(JButton a, JButton b) {
+        JPanel p = new JPanel(new GridLayout(1, 2, 6, 0));
+        p.setOpaque(false);
+        for (JButton x : new JButton[] {a, b}) {
+            x.setMargin(new Insets(2, 4, 2, 4));
+            p.add(x);
+        }
+        p.setMaximumSize(new Dimension(LARGURA_LINHA, 28));
+        return p;
+    }
+
+    // título de bloco com uma linha embaixo e, se houver, uma observação em cinza ao lado
+    private JLabel secao(String texto, String observacao) {
+        String html = "<html><b>" + texto + "</b>"
+                + (observacao == null ? "" : " <font color='#6e6e6e'>(" + observacao + ")</font>") + "</html>";
+        JLabel l = new JLabel(html);
+        l.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        l.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEmptyBorder(6, 0, 2, 0),
+                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(170, 170, 170))));
+        l.setMaximumSize(new Dimension(LARGURA_LINHA, 30));
+        return l;
+    }
+
+    // ---------- ÍCONES ----------
+
+    private void carregarIcones() {
+        int t = LinhaIcones.ICONE;
+        icones.put("moeda", icone(IMG_MOEDA, t, Desenhos.tributo("moeda", t)));
+        icones.put("espada", icone(IMG_ESPADA, t, Desenhos.tributo("espada", t)));
+        icones.put("yurt", icone(IMG_YURT, t, Desenhos.tributo("yurt", t)));
+        icones.put("pele", icone(IMG_PELE, t, Desenhos.tesouro("pele", t)));
+        icones.put("tecido", icone(IMG_TECIDO, t, Desenhos.tesouro("tecido", t)));
+        icones.put("gado", icone(IMG_GADO, t, Desenhos.tesouro("gado", t)));
+        icones.put("ferro", icone(IMG_FERRO, t, Desenhos.tesouro("ferro", t)));
+        icones.put("especiarias", icone(IMG_ESPECIARIAS, t, Desenhos.tesouro("especiarias", t)));
+        icones.put("movimentos", icone(IMG_MOVIMENTOS, t, null));
+        icones.put("acoes_tributo", icone(IMG_ACOES_TRIBUTO, t, null));
+        icones.put("votos", icone(IMG_VOTOS, t, null));
+        icones.put("khan", Desenhos.peao("branco", t - 4));
+        icones.put("ficha_neutra", Desenhos.yurt("branco", t - 6));
+        icones.put("bonus:cavalos", icone(IMG_BONUS_CAVALOS, PECA_PEQUENA, null));
+        icones.put("bonus:voto", icone(IMG_BONUS_VOTO, PECA_PEQUENA, null));
+        icones.put("bonus:yurts", icone(IMG_BONUS_YURTS, PECA_PEQUENA, null));
+        icones.put("bonus:espadas", icone(IMG_BONUS_ESPADAS, PECA_PEQUENA, null));
+        icones.put("bonus:tesouro", icone(IMG_BONUS_TESOURO, PECA_PEQUENA, null));
+        icones.put("bonus:maos", icone(IMG_BONUS_MAOS, PECA_PEQUENA, null));
+        icones.put("bonus:moedas", icone(IMG_BONUS_MOEDAS, PECA_PEQUENA, null));
+    }
+
+    // arquivo reduzido mantendo a proporção; sem arquivo, devolve a reserva (que pode ser null)
+    private static Image icone(String caminho, int tamanho, Image reserva) {
+        Image original = Imagens.carregar(caminho);
+        if (original == null)
+            return reserva;
+        int w = original.getWidth(null), h = original.getHeight(null);
+        int lw = (w >= h) ? tamanho : tamanho * w / h;
+        int lh = (h >= w) ? tamanho : tamanho * h / w;
+        return new ImageIcon(original.getScaledInstance(lw, lh, Image.SCALE_SMOOTH)).getImage();
     }
 
     private Component espaco(int altura) {
@@ -131,31 +243,9 @@ class PainelControles extends JPanel implements ObservadorIF {
         texto(lblJogador, modelo.nomeDoJogador(vez) + " · " + nome(modelo.herdeiroDoJogador(vez))
                 + " (" + modelo.corDoJogador(vez) + ")");
 
-        if (modelo.jogoTerminou())
-            texto(lblTurno, "Partida encerrada");
-        else if (modelo.turnoEmAndamento())
-            texto(lblTurno, "Movimentos: " + modelo.movimentosRestantes()
-                    + " · Tributos: " + modelo.tributosRestantes()
-                    + (modelo.podeEncerrarTurno() ? "" : " · usar Khan!"));
-        else
-            texto(lblTurno, "Escolha uma coluna para começar o turno");
-
-        texto(lblRecursos, "Moedas " + modelo.tributosDoJogador(vez, "moeda")
-                + " · Espadas " + modelo.tributosDoJogador(vez, "espada")
-                + " · Fichas de yurt " + modelo.tributosDoJogador(vez, "yurt"));
-
-        int tesouros = 0;
-        for (String t : new String[] {"pele", "tecido", "gado", "ferro", "especiarias"})
-            tesouros += modelo.tesourosDoJogador(vez, t);
-        texto(lblTesouros, "Tesouros " + tesouros + " · Bônus " + modelo.pecasBonusDoJogador(vez).size()
-                + " · Yurts na reserva " + modelo.yurtsRestantes(vez));
-
-        texto(lblVotos, "Votos " + modelo.votosDe(vez) + " · Kurultai " + modelo.fichaNeutra()
-                + "/" + modelo.limiteKurultai() + (modelo.fimDisparado() ? " · última rodada" : ""));
-
-        int prov = modelo.provinciaDoKhan();
-        texto(lblKhan, "Khan: " + (modelo.khanNasMelhorias() ? "área de melhorias"
-                : (prov == -1 ? "fora do mapa" : "província " + prov)));
+        atualizarRecursos(vez);
+        atualizarTurno();
+        atualizarPartida();
 
         colunas.removeAllItems();
         colunaDestino.removeAllItems();
@@ -182,7 +272,101 @@ class PainelControles extends JPanel implements ObservadorIF {
         gratis.setEnabled(emTurno && modelo.melhoriaGratisDisponivel() && !fim);
         // 4ª iteração: só dá para salvar imediatamente antes de o jogador da vez começar a jogar
         salvar.setEnabled(modelo.podeSalvar());
+        revalidate();
         repaint();
+    }
+
+    // ---------- BLOCOS DE INFORMAÇÃO ----------
+
+    // o que o jogador tem guardado: tributos, tesouros, yurts que ainda pode construir e peças de bônus
+    private void atualizarRecursos(int vez) {
+        linhaTributos.limpar();
+        linhaTributos.item(icones.get("moeda"), qtd(modelo.tributosDoJogador(vez, "moeda"), "moeda", "moedas"));
+        linhaTributos.item(icones.get("espada"), qtd(modelo.tributosDoJogador(vez, "espada"), "espada", "espadas"));
+        linhaTributos.item(icones.get("yurt"), qtd(modelo.tributosDoJogador(vez, "yurt"), "ficha", "fichas"));
+
+        linhaTesouros.limpar();
+        for (String t : TESOUROS)
+            linhaTesouros.item(icones.get(t), String.valueOf(modelo.tesourosDoJogador(vez, t)));
+
+        linhaReserva.limpar();
+        linhaReserva.item(Desenhos.yurt(modelo.corDoJogador(vez), LinhaIcones.ICONE - 4),
+                qtd(modelo.yurtsRestantes(vez), "yurt", "yurts") + " na reserva");
+        List<String> pecas = modelo.pecasBonusDoJogador(vez);
+        linhaReserva.texto("Bônus:", Color.BLACK);
+        if (pecas.isEmpty())
+            linhaReserva.texto("nenhum", COR_DICA);
+        for (String p : pecas)
+            linhaReserva.item(icones.get("bonus:" + p), "");
+    }
+
+    // vale só até o fim do turno: movimentos, ações de tributo e recursos virtuais da coluna ativada
+    private void atualizarTurno() {
+        linhaAcoes.limpar();
+        linhaVirtuais.limpar();
+        linhaSituacao.limpar();
+        if (modelo.jogoTerminou()) {
+            linhaSituacao.texto("Partida encerrada", COR_ALERTA);
+            return;
+        }
+        if (!modelo.turnoEmAndamento()) {
+            linhaAcoes.texto("Escolha uma coluna para começar", COR_DICA);
+            return;
+        }
+        linhaAcoes.item(icones.get("movimentos"), qtd(modelo.movimentosRestantes(), "movimento", "movimentos"));
+        linhaAcoes.item(icones.get("acoes_tributo"), qtd(modelo.tributosRestantes(), "tributo", "tributos"));
+
+        boolean algum = false;
+        for (String t : TRIBUTOS) {
+            int n = modelo.virtuaisNoTurno(t);
+            if (n > 0) {
+                linhaVirtuais.itemVirtual(icones.get(t), qtd(n, "virtual", "virtuais"));
+                algum = true;
+            }
+        }
+        if (!algum)
+            linhaVirtuais.texto("Sem recursos virtuais", COR_DICA);
+
+        if (!modelo.podeEncerrarTurno())
+            linhaSituacao.texto("Use o Khan antes de encerrar!", COR_ALERTA);
+        else if (modelo.khanUsado())
+            linhaSituacao.texto("Khan já usado neste turno", COR_DICA);
+    }
+
+    // informações gerais: rodada, votos do jogador, votos de todos no Kurultai, fim de jogo e Khan
+    private void atualizarPartida() {
+        int vez = modelo.jogadorDaVez();
+        int n = modelo.numeroDeJogadores();
+        linhaRodada.limpar();
+        linhaRodada.texto("Rodada " + modelo.rodadaAtual() + " · vez " + (vez + 1) + " de " + n, Color.BLACK);
+        if (modelo.fimDisparado() && !modelo.jogoTerminou())
+            linhaRodada.texto("ÚLTIMA RODADA", COR_ALERTA);
+
+        linhaVotos.limpar();
+        linhaVotos.item(icones.get("votos"), "Seus votos: " + modelo.votosDe(vez));
+
+        // a ficha branca soma os votos de todos; quando chega ao marco do nº de jogadores, a partida acaba
+        linhaKurultai.limpar();
+        linhaKurultai.item(icones.get("ficha_neutra"), "Votos de todos: " + modelo.fichaNeutra()
+                + " (fim em " + modelo.limiteKurultai() + ")");
+
+        linhaFim.limpar();
+        int faltam = modelo.votosParaOFim();
+        if (modelo.jogoTerminou())
+            linhaFim.texto("Partida encerrada", COR_ALERTA);
+        else if (faltam > 0)
+            linhaFim.texto("Faltam " + qtd(faltam, "voto", "votos") + " para a última rodada", COR_DICA);
+        else
+            linhaFim.texto("Limite atingido: a partida acaba nesta rodada", COR_ALERTA);
+
+        int prov = modelo.provinciaDoKhan();
+        linhaKhan.limpar();
+        linhaKhan.item(icones.get("khan"), "Khan: " + (modelo.khanNasMelhorias() ? "área de melhorias"
+                : (prov == -1 ? "fora do mapa" : "província " + (char) ('a' + prov))));
+    }
+
+    private static String qtd(int n, String singular, String plural) {
+        return n + " " + (n == 1 ? singular : plural);
     }
 
     private static String nome(String herdeiro) {
