@@ -342,7 +342,6 @@ class Turno {
 		return this.concluir();
 	}
 
-	// a melhoria grátis também pode ser a do topo da pilha, às cegas (manual, pág. 12)
 	boolean pegarMelhoriaGratisDaPilha() {
 		if (!this.melhoriaGratisDisponivel() || this.jogador.getTabuleiro().getColuna(3).estaCheia())
 			return false;

@@ -6,7 +6,6 @@ import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-// Escolha do arquivo de uma partida salva com o JFileChooser (exigência da 4ª iteração).
 // Nome e pasta são livres; só o tipo (.txt) é pré-definido.
 public class SeletorArquivo {
     private static final String EXTENSAO = "txt";

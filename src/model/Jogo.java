@@ -171,8 +171,6 @@ class Jogo {
 		return (j.getCartaSecreta() == null) ? 0 : j.getCartaSecreta().votos(j, this.tabuleiro);
 	}
 
-	// ---------- influência sobre as 3 regiões (manual, pág. 14-15) ----------
-
 	// tabela impressa acima da área de melhorias; o índice é o nº de melhorias na coluna da região (0 a 4)
 	private static final int[] VOTOS_MAIS_YURTS = {1, 1, 2, 2, 3};
 	private static final int[] VOTOS_SEGUNDO_MAIS_YURTS = {0, 1, 1, 2, 2};
@@ -216,8 +214,6 @@ class Jogo {
 		return (meus == segundo) ? VOTOS_SEGUNDO_MAIS_YURTS[melhorias] : 0;
 	}
 
-	// mais votos vence. Desempate (manual, pág. 16): mais tesouros não entregues; depois, quem está
-	// mais perto de Karakorum. Se ainda houver empate, a vitória é compartilhada.
 	List<Jogador> vencedores() {
 		List<Jogador> melhores = new ArrayList<Jogador>(this.jogadores);
 		melhores = this.manterMelhores(melhores, 0);

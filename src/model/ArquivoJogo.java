@@ -11,12 +11,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
-// Salvamento e recuperação de uma partida em arquivo texto (Cap. 16).
-// Gravação: PrintWriter sobre BufferedWriter/FileWriter, uma informação por linha.
-// Leitura: Scanner sobre BufferedReader/FileReader, que separa o arquivo em tokens.
-// O arquivo é ASCII puro: só nomes de enums, números, true/false e os nomes dos
-// jogadores codificados (espaços e acentos viram barra-u seguida de 4 hexadecimais).
-// A partida só é salva entre dois turnos, então não há Turno em andamento para gravar.
+// Salvamento e recuperação de uma partida em arquivo texto.
 class ArquivoJogo {
 	private static final String CABECALHO = "HERDEIROS_DE_KHAN";
 	private static final int VERSAO = 1;

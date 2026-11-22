@@ -13,10 +13,6 @@ import model.ModelFacade;
 import model.ObservadoIF;
 import model.ObservadorIF;
 
-// Cartela (bloco de notas) de um jogador: a imagem da cartela do herdeiro, as melhorias compradas
-// em cada espaço e o marcador da cor do jogador sobre as colunas já ativadas.
-// É um observador (Cap. 17): abre quando a fachada notifica ABRIR_CARTELA e se redesenha a cada mudança.
-// As posições estão em pixels da imagem original da cartela e foram medidas com MODO_MEDICAO.
 public class JanelaCartela extends JFrame implements ObservadorIF {
     // tamanho na tela
     private static final int LARGURA_CARTELA = 980;
