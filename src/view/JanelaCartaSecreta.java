@@ -40,7 +40,7 @@ public class JanelaCartaSecreta extends JFrame {
 
     public void mostrar(int jogador) {
         this.jogador = jogador;
-        lblTitulo.setText("Jogador " + (jogador + 1) + " (" + modelo.corDoJogador(jogador)
+        lblTitulo.setText(modelo.nomeDoJogador(jogador) + " (" + modelo.corDoJogador(jogador)
                 + "): escolha sua carta secreta");
         setVisible(true);
         repaint();

@@ -17,6 +17,7 @@ class Turno {
 	private Map<Peao, List<Parada>> paradasVisitadas = new HashMap<Peao, List<Parada>>();
 	private Map<Cidade, Integer> ataquesPorCidade = new HashMap<Cidade, Integer>();
 	private Map<TipoTributo, Integer> virtuais = new HashMap<TipoTributo, Integer>();
+	private List<Integer> entregasFeitas = new ArrayList<Integer>();
 
 	Turno(int numero, Jogador jogador, ColunaAcao coluna, Tabuleiro tabuleiro) {
 		this.numero = numero;
@@ -272,6 +273,67 @@ class Turno {
 		return tj.linhaCompleta(linha) && tj.ganhaMelhoriaGratis(linha);
 	}
 
+
+	// ---------- ENTREGAR TESOUROS (pergaminhos) ----------
+
+	// o peão que age precisa ter passado pela parada do pergaminho neste turno; cada pergaminho
+	// aceita uma entrega por turno. Dá os votos e, se ainda estiver lá, a peça de bônus.
+	boolean entregarTesouros(int espaco) {
+		EntregaTesouros e = this.tabuleiro.getEntrega(espaco);
+		if (e == null || this.entregasFeitas.contains(espaco))
+			return false;
+		Parada p = this.tabuleiro.getParada(e.getIdParada());
+		if (!this.paradasVisitadas.get(this.peaoQueAge()).contains(p))
+			return false;
+		List<TipoTesouro> lista = e.tesourosAEntregar(this.jogador);
+		if (lista == null || !this.jogador.entregarTesouros(lista))
+			return false;
+
+		this.tabuleiro.getTrilha().registrarVotos(this.jogador, e.getVotos());
+		this.entregasFeitas.add(espaco);
+		TipoPecaBonus peca = this.tabuleiro.retirarPecaBonus(espaco);
+		if (peca != null) {
+			this.jogador.receberPecaBonus(peca);
+			this.aplicarBonus(peca);
+		}
+		return true;
+	}
+
+	// efeito da peça na hora em que é pega
+	private void aplicarBonus(TipoPecaBonus peca) {
+		switch (peca) {
+			case cavalos:
+				this.movimentosRestantes += 3;
+				this.tributosRestantes += 1;
+				break;
+			case maos:
+				this.tributosRestantes += 2;
+				break;
+			case voto:
+				this.tabuleiro.getTrilha().registrarVotos(this.jogador, 1);
+				break;
+			case yurts:
+				this.receberDoEstoque(TipoTributo.yurt, 2);
+				break;
+			case espadas:
+				this.receberDoEstoque(TipoTributo.espada, 2);
+				break;
+			case moedas:
+				this.receberDoEstoque(TipoTributo.moeda, 2);
+				break;
+			default: {                                  // tesouro: um baú tirado do estoque
+				TipoTesouro t = this.tabuleiro.getEstoque().sortearTesouro();
+				if (t != null)
+					this.jogador.receberTesouro(t);
+			}
+		}
+	}
+
+	private void receberDoEstoque(TipoTributo tipo, int quantidade) {
+		for (int i = 0; i < quantidade; i++)
+			if (this.tabuleiro.getEstoque().retirar(tipo))
+				this.jogador.receberTributo(tipo, 1);
+	}
 
 	boolean podeEncerrar() {
 		return !this.coluna.exigeKhan() || this.khanUsado;

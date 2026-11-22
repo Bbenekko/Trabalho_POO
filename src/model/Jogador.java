@@ -8,6 +8,7 @@ import java.util.Map;
 
 class Jogador 
 {
+	private String nome;
 	private Cor cor;
 	private Herdeiro herdeiro;
 	private List<Peao> peoes = new ArrayList<Peao>();
@@ -15,10 +16,11 @@ class Jogador
 	private Map<TipoTributo, Integer> tributos = new HashMap<TipoTributo, Integer>();
 	private Map<TipoTesouro, Integer> tesouros = new HashMap<TipoTesouro, Integer>();
 	private int yurtsRestantes = 12;
-	//private List<PecaBonus> bonus = new ArrayList<PecaBonus>();   
+	private List<TipoPecaBonus> pecasBonus = new ArrayList<TipoPecaBonus>();
 	private CartaConselheiroSecreto cartaSecreta = null;                
     
 	Jogador(Cor cor, Herdeiro herdeiro) {
+		this.nome = herdeiro.name();
 		this.cor = cor;
 		this.herdeiro = herdeiro;
 		this.tabuleiro = new TabuleiroJogador(herdeiro);
@@ -115,4 +117,41 @@ class Jogador
     CartaConselheiroSecreto getCartaSecreta() {
         return this.cartaSecreta;
     }
+
+	// ---------- nome e recuperação de partida salva ----------
+
+	String getNome() {
+		return this.nome;
+	}
+
+	void definirNome(String nome) {
+		this.nome = nome;
+	}
+
+	void definirTributo(TipoTributo t, int n) {
+		this.tributos.put(t, n);
+	}
+
+	void definirTesouro(TipoTesouro t, int n) {
+		this.tesouros.put(t, n);
+	}
+
+	void definirYurtsRestantes(int n) {
+		this.yurtsRestantes = n;
+	}
+
+	// ---------- peças de bônus ganhas nas entregas de tesouros ----------
+
+	void receberPecaBonus(TipoPecaBonus p) {
+		this.pecasBonus.add(p);
+	}
+
+	List<TipoPecaBonus> getPecasBonus() {
+		return Collections.unmodifiableList(this.pecasBonus);
+	}
+
+	void definirPecasBonus(List<TipoPecaBonus> pecas) {
+		this.pecasBonus.clear();
+		this.pecasBonus.addAll(pecas);
+	}
 }

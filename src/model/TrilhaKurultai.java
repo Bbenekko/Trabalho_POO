@@ -40,4 +40,13 @@ class TrilhaKurultai {
 	boolean fimDisparado(){
 		return this.fichaNeutra >= this.limite;
 	}
+
+	// recuperação de partida salva
+	void restaurar(Jogador j, int votos) {
+		this.votos.put(j, votos);
+	}
+
+	void definirFichaNeutra(int ficha) {
+		this.fichaNeutra = ficha;
+	}
 }

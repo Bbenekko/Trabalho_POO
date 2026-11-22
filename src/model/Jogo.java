@@ -18,7 +18,12 @@ class Jogo {
 	private Map<Jogador, List<CartaConselheiroSecreto>> opcoesSecretas = new HashMap<Jogador, List<CartaConselheiroSecreto>>();
 
 	Jogo(List<Cor> cores, List<Herdeiro> herdeiros) {
-		if (cores.size() != herdeiros.size())
+		this(cores, herdeiros, null);
+	}
+
+	// nomes == null: cada jogador fica com o nome do herdeiro
+	Jogo(List<Cor> cores, List<Herdeiro> herdeiros, List<String> nomes) {
+		if (cores.size() != herdeiros.size() || (nomes != null && nomes.size() != cores.size()))
 			throw new IllegalArgumentException("Cada jogador precisa de uma cor e de um herdeiro");
 		if (cores.size() < 2 || cores.size() > 5)
 			throw new IllegalArgumentException("O jogo e para 2 a 5 jogadores: " + cores.size());
@@ -26,7 +31,10 @@ class Jogo {
 		for (int i = 0; i < cores.size(); i++) {
 			if (cores.indexOf(cores.get(i)) != i || herdeiros.indexOf(herdeiros.get(i)) != i)
 				throw new IllegalArgumentException("Cor ou herdeiro repetido");
-			this.jogadores.add(new Jogador(cores.get(i), herdeiros.get(i)));
+			Jogador novo = new Jogador(cores.get(i), herdeiros.get(i));
+			if (nomes != null && nomes.get(i) != null && !nomes.get(i).trim().isEmpty())
+				novo.definirNome(nomes.get(i).trim());
+			this.jogadores.add(novo);
 		}
 
 		this.tabuleiro = new Tabuleiro(cores.size());
@@ -173,5 +181,35 @@ class Jogo {
 				melhores.add(j);
 		}
 		return melhores;
+	}
+
+	// ---------- usados pelo salvamento e pela recuperação (ArquivoJogo) ----------
+
+	int getIndiceAtual() {
+		return this.indiceAtual;
+	}
+
+	int getNumeroDoTurno() {
+		return this.numeroDoTurno;
+	}
+
+	boolean isUltimaRodada() {
+		return this.ultimaRodada;
+	}
+
+	void restaurar(int indiceAtual, int numeroDoTurno, boolean fimDisparado, boolean ultimaRodada,
+			boolean encerrado) {
+		if (indiceAtual < 0 || indiceAtual >= this.jogadores.size())
+			throw new IllegalArgumentException("Jogador da vez inválido: " + indiceAtual);
+		this.turnoAtual = null;
+		this.indiceAtual = indiceAtual;
+		this.numeroDoTurno = numeroDoTurno;
+		this.fimDisparado = fimDisparado;
+		this.ultimaRodada = ultimaRodada;
+		this.encerrado = encerrado;
+	}
+
+	void definirOpcoesSecretas(Jogador j, List<CartaConselheiroSecreto> duas) {
+		this.opcoesSecretas.put(j, new ArrayList<CartaConselheiroSecreto>(duas));
 	}
 }

@@ -9,14 +9,21 @@ import java.util.List;
 
 import model.ModelFacade;
 
+// Primeira janela: número de jogadores e, para cada um, nome, cor do peão e herdeiro.
+// A ordem de jogo é a ordem das linhas, a não ser que "Sortear a ordem" esteja marcado.
+// Também permite recuperar uma partida salva. Os listeners dos botões são do Controller.
 public class JanelaInicial extends JFrame {
     private static final int MAX_JOGADORES = 5;
+    private static final int COLUNAS_NOME = 12;
 
     private JComboBox<Integer> numero = new JComboBox<Integer>();
+    private List<JTextField> nomes = new ArrayList<JTextField>();
     private List<JComboBox<String>> cores = new ArrayList<JComboBox<String>>();
     private List<JComboBox<String>> herdeiros = new ArrayList<JComboBox<String>>();
     private List<JLabel> rotulos = new ArrayList<JLabel>();
+    private JCheckBox sortearOrdem = new JCheckBox("Sortear a ordem dos jogadores");
     private JButton comecar = new JButton("Começar a partida");
+    private JButton carregar = new JButton("Carregar partida salva...");
     private JLabel lblAviso = new JLabel(" ");
 
     public JanelaInicial() {
@@ -37,7 +44,7 @@ public class JanelaInicial extends JFrame {
 
         JLabel titulo = new JLabel("Herdeiros de Khan");
         titulo.setFont(new Font("Serif", Font.BOLD, 22));
-        c.gridx = 0; c.gridy = 0; c.gridwidth = 3;
+        c.gridx = 0; c.gridy = 0; c.gridwidth = 4;
         conteudo.add(titulo, c);
 
         c.gridwidth = 1; c.gridy = 1;
@@ -47,13 +54,17 @@ public class JanelaInicial extends JFrame {
         c.gridx = 1;
         conteudo.add(numero, c);
 
-        c.gridy = 2; c.gridx = 1;
-        conteudo.add(new JLabel("Cor"), c);
+        c.gridy = 2;
+        c.gridx = 1;
+        conteudo.add(new JLabel("Nome"), c);
         c.gridx = 2;
+        conteudo.add(new JLabel("Cor do peão"), c);
+        c.gridx = 3;
         conteudo.add(new JLabel("Herdeiro"), c);
 
         for (int i = 0; i < MAX_JOGADORES; i++) {
-            JLabel r = new JLabel("Jogador " + (i + 1));
+            JLabel r = new JLabel((i + 1) + "º a jogar");
+            JTextField nome = new JTextField("Jogador " + (i + 1), COLUNAS_NOME);
             JComboBox<String> cor = new JComboBox<String>();
             JComboBox<String> herdeiro = new JComboBox<String>();
             for (String s : opcoesCor)
@@ -63,6 +74,7 @@ public class JanelaInicial extends JFrame {
             cor.setSelectedIndex(i % opcoesCor.size());
             herdeiro.setSelectedIndex(i % opcoesHerdeiro.size());
             rotulos.add(r);
+            nomes.add(nome);
             cores.add(cor);
             herdeiros.add(herdeiro);
 
@@ -70,16 +82,25 @@ public class JanelaInicial extends JFrame {
             c.gridx = 0;
             conteudo.add(r, c);
             c.gridx = 1;
-            conteudo.add(cor, c);
+            conteudo.add(nome, c);
             c.gridx = 2;
+            conteudo.add(cor, c);
+            c.gridx = 3;
             conteudo.add(herdeiro, c);
         }
 
+        c.gridy = 3 + MAX_JOGADORES; c.gridx = 0; c.gridwidth = 4;
+        conteudo.add(sortearOrdem, c);
+
         lblAviso.setForeground(new Color(180, 0, 0));
-        c.gridy = 3 + MAX_JOGADORES; c.gridx = 0; c.gridwidth = 3;
-        conteudo.add(lblAviso, c);
         c.gridy++;
-        conteudo.add(comecar, c);
+        conteudo.add(lblAviso, c);
+
+        JPanel botoes = new JPanel(new GridLayout(1, 2, 12, 0));
+        botoes.add(comecar);
+        botoes.add(carregar);
+        c.gridy++;
+        conteudo.add(botoes, c);
 
         numero.addActionListener(new TratadorNumero());
         habilitarLinhas();
@@ -101,6 +122,7 @@ public class JanelaInicial extends JFrame {
         for (int i = 0; i < MAX_JOGADORES; i++) {
             boolean usado = i < n;
             rotulos.get(i).setEnabled(usado);
+            nomes.get(i).setEnabled(usado);
             cores.get(i).setEnabled(usado);
             herdeiros.get(i).setEnabled(usado);
         }
@@ -108,6 +130,13 @@ public class JanelaInicial extends JFrame {
 
     public int getNumeroDeJogadores() {
         return (Integer) numero.getSelectedItem();
+    }
+
+    public List<String> getNomes() {
+        List<String> lista = new ArrayList<String>();
+        for (int i = 0; i < getNumeroDeJogadores(); i++)
+            lista.add(nomes.get(i).getText().trim());
+        return lista;
     }
 
     public List<String> getCores() {
@@ -124,8 +153,16 @@ public class JanelaInicial extends JFrame {
         return lista;
     }
 
+    public boolean isSortearOrdem() {
+        return sortearOrdem.isSelected();
+    }
+
     public JButton getBtnComecar() {
         return comecar;
+    }
+
+    public JButton getBtnCarregar() {
+        return carregar;
     }
 
     public void mostrarAviso(String texto) {

@@ -53,7 +53,7 @@ class CartaConselheiroAberto extends CartaConselheiro {
 				return this.menorQuantidadeDeYurtsPorRegiao(j, t);
 			case duas_pecas_bonus:
 			case tres_pecas_bonus:
-				return 0;                                         // TODO: quando existir PecaBonus
+				return j.getPecasBonus().size();
 			case duas_cidades:
 			case tres_cidades:
 				return this.cidadesConquistadas(j, t);
@@ -83,5 +83,9 @@ class CartaConselheiroAberto extends CartaConselheiro {
 		t.getTrilha().registrarVotos(j, 1);
 		this.retirada = true;
 		return true;
+	}
+
+	void definirRetirada(boolean retirada) {
+		this.retirada = retirada;
 	}
 }

@@ -1,6 +1,7 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,6 +20,7 @@ class Tabuleiro {
 	private TrilhaKurultai trilha;
 	private List<CartaConselheiroAberto> cartasAbertas = new ArrayList<CartaConselheiroAberto>();
 	private List<TipoPecaBonus> espacosBonus = new ArrayList<TipoPecaBonus>();   // null = espaço vazio
+	private List<EntregaTesouros> entregas = new ArrayList<EntregaTesouros>();   // mesmo índice do espaço de bônus
 	static final int KARAKORUM = 33;
 
 	
@@ -32,6 +34,32 @@ class Tabuleiro {
 		this.prepararCidades();   
 		this.prepararCartasAbertas();
 		this.prepararPecasBonus();
+		this.prepararEntregas();
+	}
+
+	// os 7 pergaminhos, na mesma ordem dos espaços de bônus desenhados no mapa
+	private void prepararEntregas() {
+		this.entregas.add(new EntregaTesouros(3, 1, Arrays.asList(TipoTesouro.tecido, TipoTesouro.tecido), 0));
+		this.entregas.add(new EntregaTesouros(10, 1, Arrays.asList(TipoTesouro.ferro, TipoTesouro.ferro), 0));
+		this.entregas.add(new EntregaTesouros(11, 1, Arrays.asList(TipoTesouro.pele, TipoTesouro.pele), 0));
+		this.entregas.add(new EntregaTesouros(KARAKORUM, 2,
+				Arrays.asList(TipoTesouro.ferro, TipoTesouro.pele, TipoTesouro.gado), 0));
+		this.entregas.add(new EntregaTesouros(28, 1, Arrays.asList(TipoTesouro.gado, TipoTesouro.gado), 0));
+		this.entregas.add(new EntregaTesouros(18, 1, Arrays.asList(TipoTesouro.especiarias, TipoTesouro.especiarias), 0));
+		this.entregas.add(new EntregaTesouros(29, 1, new ArrayList<TipoTesouro>(), 3));
+	}
+
+	EntregaTesouros getEntrega(int espaco) {
+		if (espaco < 0 || espaco >= this.entregas.size())
+			return null;
+		return this.entregas.get(espaco);
+	}
+
+	// tira a peça do espaço (fica vazio); null se já foi pega
+	TipoPecaBonus retirarPecaBonus(int espaco) {
+		TipoPecaBonus t = this.espacosBonus.get(espaco);
+		this.espacosBonus.set(espaco, null);
+		return t;
 	}
 	
 	private void criarMapa() {
@@ -526,5 +554,28 @@ class Tabuleiro {
 
 	TipoPecaBonus pecaBonusNoEspaco(int espaco) {
 		return this.espacosBonus.get(espaco);
+	}
+
+	// ---------- recuperação de partida salva ----------
+
+	// cidades ainda escondidas, da base (índice 0) para o topo
+	List<Cidade> getPilhaCidades() {
+		return Collections.unmodifiableList(this.pilhaCidades);
+	}
+
+	void restaurarPilhaCidades(List<Cidade> pilha) {
+		this.pilhaCidades.clear();
+		for (Cidade c : pilha)
+			this.pilhaCidades.push(c);
+	}
+
+	void restaurarCartasAbertas(List<CartaConselheiroAberto> cartas) {
+		this.cartasAbertas.clear();
+		this.cartasAbertas.addAll(cartas);
+	}
+
+	void restaurarPecasBonus(List<TipoPecaBonus> espacos) {
+		this.espacosBonus.clear();
+		this.espacosBonus.addAll(espacos);
 	}
 }

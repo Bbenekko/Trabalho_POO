@@ -36,6 +36,7 @@ class PainelControles extends JPanel implements ObservadorIF {
 
     private JButton verCartela = new JButton("Ver minha cartela");
     private JButton verCartas = new JButton("Ver cartas de conselheiro");
+    private JButton salvar = new JButton("Salvar partida...");
     private JLabel lblAviso = new JLabel(" ");
 
     PainelControles() {
@@ -48,9 +49,11 @@ class PainelControles extends JPanel implements ObservadorIF {
         modos.addItem("Clique leva o Khan");
         modos.addItem("Clique ataca cidade");
         modos.addItem("Clique constrói yurt");
+        modos.addItem("Clique entrega tesouros");
 
         lblJogador.setFont(new Font("SansSerif", Font.BOLD, 15));
         lblAviso.setForeground(new Color(180, 0, 0));
+        lblAviso.setVerticalAlignment(SwingConstants.TOP);
 
         add(Box.createRigidArea(new Dimension(0, ALTURA_INDICADOR + 8)));
         adicionar(lblJogador);
@@ -78,8 +81,12 @@ class PainelControles extends JPanel implements ObservadorIF {
         adicionar(titulo("Consultas"));
         adicionar(verCartela);
         adicionar(verCartas);
+
+        adicionar(titulo("Partida"));
+        adicionar(salvar);
         adicionar(espaco(10));
         adicionar(lblAviso);
+        add(Box.createVerticalGlue());
 
         atualizar();
         ControladorJogo.getInstance().registra(this);
@@ -121,7 +128,7 @@ class PainelControles extends JPanel implements ObservadorIF {
         if (!modelo.jogoIniciado())
             return;
         int vez = modelo.jogadorDaVez();
-        texto(lblJogador, "Jogador " + (vez + 1) + " · " + nome(modelo.herdeiroDoJogador(vez))
+        texto(lblJogador, modelo.nomeDoJogador(vez) + " · " + nome(modelo.herdeiroDoJogador(vez))
                 + " (" + modelo.corDoJogador(vez) + ")");
 
         if (modelo.jogoTerminou())
@@ -140,7 +147,8 @@ class PainelControles extends JPanel implements ObservadorIF {
         int tesouros = 0;
         for (String t : new String[] {"pele", "tecido", "gado", "ferro", "especiarias"})
             tesouros += modelo.tesourosDoJogador(vez, t);
-        texto(lblTesouros, "Tesouros " + tesouros + " · Yurts na reserva " + modelo.yurtsRestantes(vez));
+        texto(lblTesouros, "Tesouros " + tesouros + " · Bônus " + modelo.pecasBonusDoJogador(vez).size()
+                + " · Yurts na reserva " + modelo.yurtsRestantes(vez));
 
         texto(lblVotos, "Votos " + modelo.votosDe(vez) + " · Kurultai " + modelo.fichaNeutra()
                 + "/" + modelo.limiteKurultai() + (modelo.fimDisparado() ? " · última rodada" : ""));
@@ -172,6 +180,8 @@ class PainelControles extends JPanel implements ObservadorIF {
         khanMelhorias.setEnabled(emTurno && !modelo.khanUsado() && !fim);
         comprar.setEnabled(emTurno && !expostas.isEmpty() && !fim);
         gratis.setEnabled(emTurno && modelo.melhoriaGratisDisponivel() && !fim);
+        // 4ª iteração: só dá para salvar imediatamente antes de o jogador da vez começar a jogar
+        salvar.setEnabled(modelo.podeSalvar());
         repaint();
     }
 
@@ -184,7 +194,25 @@ class PainelControles extends JPanel implements ObservadorIF {
     }
 
     void mostrarAviso(String texto) {
-        lblAviso.setText("<html><div style='width:" + (LARGURA - 3 * MARGEM) + "px'>" + texto + "</div></html>");
+        lblAviso.setText("<html>" + quebrar(texto) + "</html>");
+    }
+
+    // quebra o aviso em linhas que cabem na lateral (o HTML do JLabel não respeita a largura do div)
+    private String quebrar(String texto) {
+        FontMetrics fm = lblAviso.getFontMetrics(lblAviso.getFont());
+        int maximo = LARGURA - 3 * MARGEM;
+        StringBuilder sb = new StringBuilder();
+        StringBuilder linha = new StringBuilder();
+        for (String palavra : texto.split(" ")) {
+            String tentativa = (linha.length() == 0) ? palavra : linha + " " + palavra;
+            if (linha.length() > 0 && fm.stringWidth(tentativa) > maximo) {
+                sb.append(linha).append("<br>");
+                linha = new StringBuilder(palavra);
+            } else {
+                linha = new StringBuilder(tentativa);
+            }
+        }
+        return sb.append(linha).toString();
     }
 
     void limparAviso() {
@@ -213,6 +241,7 @@ class PainelControles extends JPanel implements ObservadorIF {
     JButton getBtnMelhoriaGratis() { return gratis; }
     JButton getBtnVerCartela() { return verCartela; }
     JButton getBtnVerCartas() { return verCartas; }
+    JButton getBtnSalvar() { return salvar; }
     JComboBox<String> getComboColunas() { return colunas; }
     JComboBox<String> getComboModo() { return modos; }
     JComboBox<String> getComboMelhorias() { return melhorias; }

@@ -79,4 +79,19 @@ class AreaMelhorias {
 			this.expostas.add(this.pilha.pop());
 		}
 	}
+
+	// ---------- recuperação de partida salva ----------
+
+	// pilha de baixo (índice 0) para o topo
+	List<Melhoria> getPilha() {
+		return Collections.unmodifiableList(this.pilha);
+	}
+
+	void restaurar(List<Melhoria> expostas, List<Melhoria> pilha) {
+		this.expostas.clear();
+		this.expostas.addAll(expostas);
+		this.pilha.clear();
+		for (Melhoria m : pilha)
+			this.pilha.push(m);
+	}
 }

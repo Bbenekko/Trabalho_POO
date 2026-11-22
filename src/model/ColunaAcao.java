@@ -109,4 +109,11 @@ class ColunaAcao
 		}
 		return n;
 	}
+
+	// recuperação de partida salva: estado e melhorias gravados no arquivo
+	void restaurar(boolean ativada, List<Melhoria> melhorias) {
+		this.ativada = ativada;
+		this.melhorias.clear();
+		this.melhorias.addAll(melhorias);
+	}
 }

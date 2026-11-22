@@ -33,13 +33,17 @@ public class JanelaCartela extends JFrame implements ObservadorIF {
         int evento = o.get(ModelFacade.EVENTO);
         if (evento == ModelFacade.ABRIR_CARTELA) {
             jogador = o.get(ModelFacade.JOGADOR_DA_CARTELA);
-            setTitle("Cartela do jogador " + (jogador + 1) + " (" + modelo.corDoJogador(jogador) + ")");
+            setTitle("Cartela de " + modelo.nomeDoJogador(jogador) + " (" + modelo.corDoJogador(jogador) + ")");
             setLocationRelativeTo(null);
             setVisible(true);
             toFront();
         }
         if (isVisible())
             repaint();
+    }
+
+    private static String bonus(List<String> pecas) {
+        return pecas.isEmpty() ? "nenhuma" : String.join(", ", pecas);
     }
 
     private class PainelCartela extends JPanel {
@@ -101,7 +105,8 @@ public class JanelaCartela extends JFrame implements ObservadorIF {
                 x += 100;
             }
             g2.drawString("Yurts na reserva: " + modelo.yurtsRestantes(jogador)
-                    + "  ·  Votos: " + modelo.votosDe(jogador), 16, y + 50);
+                    + "  ·  Votos: " + modelo.votosDe(jogador)
+                    + "  ·  Peças de bônus: " + bonus(modelo.pecasBonusDoJogador(jogador)), 16, y + 50);
 
             String secreta = modelo.cartaSecreta(jogador);
             if (secreta != null) {

@@ -34,6 +34,7 @@ public class JanelaJogo extends JFrame {
     public JButton getBtnMelhoriaGratis() { return controles.getBtnMelhoriaGratis(); }
     public JButton getBtnVerCartela() { return controles.getBtnVerCartela(); }
     public JButton getBtnVerCartas() { return controles.getBtnVerCartas(); }
+    public JButton getBtnSalvar() { return controles.getBtnSalvar(); }
     public JComboBox<String> getComboColunas() { return controles.getComboColunas(); }
     public JComboBox<String> getComboModo() { return controles.getComboModo(); }
     public JComboBox<String> getComboMelhorias() { return controles.getComboMelhorias(); }

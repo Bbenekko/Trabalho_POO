@@ -14,6 +14,8 @@ class TratadorAcoes implements ActionListener {
     static final String MELHORIA_GRATIS = "MELHORIA_GRATIS";
     static final String VER_CARTELA = "VER_CARTELA";
     static final String VER_CARTAS = "VER_CARTAS";
+    static final String CARREGAR = "CARREGAR";
+    static final String SALVAR = "SALVAR";
     static final String ATACAR = "ATACAR:";
 
     @Override
@@ -37,6 +39,8 @@ class TratadorAcoes implements ActionListener {
             case MELHORIA_GRATIS: c.pegarMelhoriaGratis(); break;
             case VER_CARTELA:     c.verCartela(); break;
             case VER_CARTAS:      c.verCartas(); break;
+            case CARREGAR:        c.carregarPartida(); break;
+            case SALVAR:          c.salvarPartida(); break;
             default:              break;
         }
     }

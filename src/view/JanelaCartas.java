@@ -64,7 +64,7 @@ public class JanelaCartas extends JFrame implements ObservadorIF {
             String secreta = modelo.cartaSecreta(vez);
             x += ESPACO;
             g2.setColor(Color.WHITE);
-            g2.drawString("Secreta · jogador " + (vez + 1), x, 26);
+            g2.drawString("Secreta · " + modelo.nomeDoJogador(vez), x, 26);
             if (secreta != null)
                 g2.drawImage(Desenhos.carta(secreta, LARGURA_CARTA, false), x, 40, null);
         }

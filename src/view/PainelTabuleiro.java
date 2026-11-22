@@ -406,6 +406,11 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
         return maisProximo(coordenadas, x, y, RAIO_PARADA);
     }
 
+    // pergaminho de entrega de tesouros: o clique perto do espaço de bônus dele
+    public int espacoBonusEm(int x, int y) {
+        return maisProximo(posicoesBonus, x, y, BONUS_IMAGEM);
+    }
+
     public int provinciaEm(int x, int y) {
         return maisProximo(centrosProvincias, x, y, RAIO_PROVINCIA);
     }

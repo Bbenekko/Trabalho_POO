@@ -1,6 +1,10 @@
 package controller;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 import model.ModelFacade;
 import model.ObservadorIF;
@@ -11,6 +15,7 @@ import view.JanelaFim;
 import view.JanelaInicial;
 import view.JanelaJogo;
 import view.PainelTabuleiro;
+import view.SeletorArquivo;
 
 public class ControladorJogo {
     public static final int MOVER = 0;
@@ -18,6 +23,7 @@ public class ControladorJogo {
     public static final int KHAN = 2;
     public static final int ATACAR = 3;
     public static final int YURT = 4;
+    public static final int ENTREGAR = 5;
 
     private static ControladorJogo instancia = null;
 
@@ -25,6 +31,10 @@ public class ControladorJogo {
     private JanelaInicial janelaInicial;
     private JanelaCartaSecreta janelaCartaSecreta;
     private JanelaJogo janela;
+    private JanelaCartela janelaCartela;
+    private JanelaCartas janelaCartas;
+    private JanelaFim janelaFim;
+    private List<ObservadorIF> observadores = new ArrayList<ObservadorIF>();   // os da partida atual
     private TratadorAcoes tratadorAcoes = new TratadorAcoes();
     private int peaoSelecionado = 0;
     private int jogadorEscolhendoCarta = 0;
@@ -40,33 +50,36 @@ public class ControladorJogo {
 
     public void registra(ObservadorIF o) {
         modelo.add(o);
+        observadores.add(o);
     }
 
     // ===================== SEQUÊNCIA DA PARTIDA =====================
 
+    // 1. janela inicial: nova partida (nomes, cores, herdeiros e ordem) ou partida salva
     void iniciar() {
         janelaInicial = new JanelaInicial();
-        janelaInicial.getBtnComecar().setActionCommand(TratadorAcoes.COMECAR);
-        janelaInicial.getBtnComecar().addActionListener(tratadorAcoes);
+        registrarBotao(janelaInicial.getBtnComecar(), TratadorAcoes.COMECAR);
+        registrarBotao(janelaInicial.getBtnCarregar(), TratadorAcoes.CARREGAR);
         janelaInicial.setVisible(true);
     }
 
     void comecarPartida() {
+        List<String> nomes = janelaInicial.getNomes();
         List<String> cores = janelaInicial.getCores();
         List<String> herdeiros = janelaInicial.getHerdeiros();
-        if (temRepetido(cores) || temRepetido(herdeiros)) {
-            janelaInicial.mostrarAviso("Cada jogador precisa de uma cor e de um herdeiro diferentes");
+        if (nomes.contains("")) {
+            janelaInicial.mostrarAviso("Todos os jogadores precisam de um nome");
             return;
         }
-        modelo.novoJogo(cores, herdeiros);
+        if (temRepetido(nomes) || temRepetido(cores) || temRepetido(herdeiros)) {
+            janelaInicial.mostrarAviso("Cada jogador precisa de nome, cor e herdeiro diferentes");
+            return;
+        }
+        modelo.novoJogo(nomes, cores, herdeiros, janelaInicial.isSortearOrdem());
         janelaInicial.dispose();
+        criarJanelasDaPartida();
 
-        janela = new JanelaJogo();
-        new JanelaCartela();
-        new JanelaCartas();
-        new JanelaFim();
-        registrarListenersDaJanela();
-
+        // 2. cada jogador escolhe a carta secreta, um de cada vez
         jogadorEscolhendoCarta = 0;
         janelaCartaSecreta = new JanelaCartaSecreta();
         janelaCartaSecreta.getBtnOpcao(0).setActionCommand(TratadorAcoes.CARTA_0);
@@ -88,6 +101,66 @@ public class ControladorJogo {
         }
     }
 
+    // recuperação: a partida volta exatamente no ponto em que foi salva (antes de um jogador começar)
+    void carregarPartida() {
+        String caminho = SeletorArquivo.escolherParaAbrir(janelaInicial);
+        if (caminho == null)
+            return;
+        if (!modelo.carregarJogo(caminho)) {
+            janelaInicial.mostrarAviso("Não foi possível ler a partida desse arquivo");
+            return;
+        }
+        janelaInicial.dispose();
+        criarJanelasDaPartida();
+        janela.setVisible(true);
+    }
+
+    // a janela principal e as janelas observadoras existem desde já, mas só aparecem quando notificadas
+    private void criarJanelasDaPartida() {
+        janela = new JanelaJogo();
+        janelaCartela = new JanelaCartela();
+        janelaCartas = new JanelaCartas();
+        janelaFim = new JanelaFim();
+        registrarListenersDaJanela();
+    }
+
+    // 4. fim: o vencedor já está na JanelaFim; pergunta se querem jogar de novo
+    private void perguntarNovaPartida() {
+        int resposta = JOptionPane.showConfirmDialog(janelaFim,
+                "A partida terminou. Desejam iniciar uma nova partida?",
+                "Fim de jogo", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        if (resposta == JOptionPane.YES_OPTION) {
+            fecharJanelasDaPartida();
+            iniciar();                                 // volta à escolha dos personagens
+        } else {
+            System.exit(0);
+        }
+    }
+
+    private void fecharJanelasDaPartida() {
+        for (ObservadorIF o : observadores)
+            modelo.remove(o);
+        observadores.clear();
+        JFrame[] janelas = {janela, janelaCartela, janelaCartas, janelaFim};
+        for (JFrame f : janelas)
+            if (f != null)
+                f.dispose();
+    }
+
+    void salvarPartida() {
+        if (!modelo.podeSalvar()) {
+            janela.mostrarAviso("Só é possível salvar antes de o jogador da vez começar a jogar");
+            return;
+        }
+        String caminho = SeletorArquivo.escolherParaSalvar(janela);
+        if (caminho == null)
+            return;
+        if (modelo.salvarJogo(caminho))
+            janela.mostrarAviso("Partida salva em " + new java.io.File(caminho).getName());
+        else
+            janela.mostrarAviso("Não foi possível salvar nesse arquivo");
+    }
+
     private static boolean temRepetido(List<String> lista) {
         for (int i = 0; i < lista.size(); i++)
             if (lista.indexOf(lista.get(i)) != i)
@@ -105,6 +178,7 @@ public class ControladorJogo {
         registrarBotao(janela.getBtnMelhoriaGratis(), TratadorAcoes.MELHORIA_GRATIS);
         registrarBotao(janela.getBtnVerCartela(), TratadorAcoes.VER_CARTELA);
         registrarBotao(janela.getBtnVerCartas(), TratadorAcoes.VER_CARTAS);
+        registrarBotao(janela.getBtnSalvar(), TratadorAcoes.SALVAR);
     }
 
     private void registrarBotao(javax.swing.AbstractButton b, String comando) {
@@ -127,8 +201,12 @@ public class ControladorJogo {
             janela.mostrarAviso("Ative uma coluna antes de encerrar o turno");
             return;
         }
-        if (!modelo.encerrarTurno())
+        if (!modelo.encerrarTurno()) {
             janela.mostrarAviso("Use o Khan antes de encerrar: esta coluna exige");
+            return;
+        }
+        if (modelo.jogoTerminou())
+            perguntarNovaPartida();
     }
 
     void usarKhanNasMelhorias() {
@@ -175,7 +253,8 @@ public class ControladorJogo {
             case TRIBUTO: cliqueTributo(painel, x, y); break;
             case KHAN:    cliqueKhan(painel, x, y); break;
             case ATACAR:  cliqueAtacar(painel, x, y); break;
-            default:      cliqueYurt(painel, x, y); break;
+            case YURT:    cliqueYurt(painel, x, y); break;
+            default:      cliqueEntregar(painel, x, y); break;
         }
     }
 
@@ -220,6 +299,23 @@ public class ControladorJogo {
         int id = painel.paradaEm(x, y);
         if (id != -1 && !modelo.construirYurt(id))
             janela.mostrarAviso("Não é possível construir yurt na parada " + id);
+    }
+
+    // pergaminho: entrega os tesouros pedidos em troca de votos e da peça de bônus
+    private void cliqueEntregar(PainelTabuleiro painel, int x, int y) {
+        int espaco = painel.espacoBonusEm(x, y);
+        if (espaco == -1) {
+            janela.mostrarAviso("Clique num dos pergaminhos de entrega de tesouros");
+            return;
+        }
+        if (!modelo.turnoEmAndamento()) {
+            janela.mostrarAviso("Ative uma coluna antes de entregar tesouros");
+            return;
+        }
+        if (!modelo.entregarTesouros(espaco))
+            janela.mostrarAviso("Entrega recusada: passe pela parada " + modelo.paradaDaEntrega(espaco)
+                    + " neste turno e tenha " + String.join(", ", modelo.tesourosDaEntrega(espaco))
+                    + " (cada pergaminho, 1 vez por turno)");
     }
 
     private void cliqueAtacar(PainelTabuleiro painel, int x, int y) {

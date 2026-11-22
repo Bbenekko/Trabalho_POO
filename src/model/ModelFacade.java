@@ -1,6 +1,8 @@
 package model;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ModelFacade implements ObservadoIF {
@@ -74,14 +76,62 @@ public class ModelFacade implements ObservadoIF {
 	// ===================== PARTIDA =====================
 
 	public void novoJogo(List<String> cores, List<String> herdeiros) {
+		this.novoJogo(null, cores, herdeiros, false);
+	}
+
+	// nomes pode ser null (cada um fica com o nome do herdeiro); sortearOrdem embaralha a ordem de jogo,
+	// senão a ordem é a das listas recebidas
+	public void novoJogo(List<String> nomes, List<String> cores, List<String> herdeiros, boolean sortearOrdem) {
+		List<Integer> ordem = new ArrayList<Integer>();
+		for (int i = 0; i < cores.size(); i++)
+			ordem.add(i);
+		if (sortearOrdem)
+			Collections.shuffle(ordem);
+
 		List<Cor> c = new ArrayList<Cor>();
-		for (String nome : cores)
-			c.add(Cor.valueOf(nome));
 		List<Herdeiro> h = new ArrayList<Herdeiro>();
-		for (String nome : herdeiros)
-			h.add(Herdeiro.valueOf(nome));
-		this.jogo = new Jogo(c, h);
+		List<String> n = (nomes == null) ? null : new ArrayList<String>();
+		for (int i : ordem) {
+			c.add(Cor.valueOf(cores.get(i)));
+			h.add(Herdeiro.valueOf(herdeiros.get(i)));
+			if (n != null)
+				n.add(nomes.get(i));
+		}
+		this.jogo = new Jogo(c, h, n);
 		this.notificar(NOVO_JOGO);
+	}
+
+	// ===================== SALVAMENTO E RECUPERAÇÃO =====================
+
+	// só antes de o jogador da vez começar a jogar (nenhuma coluna ativada ainda)
+	public boolean podeSalvar() {
+		return this.jogo != null && !this.jogo.encerrado() && this.jogo.getTurnoAtual() == null
+				&& this.todosEscolheramCartaSecreta();
+	}
+
+	// grava a partida no arquivo texto escolhido pelo usuário; devolve false se não pôde
+	public boolean salvarJogo(String caminho) {
+		if (!this.podeSalvar())
+			return false;
+		try {
+			ArquivoJogo.gravar(this.jogo, caminho);
+			return true;
+		} catch (IOException e) {
+			System.out.println("Erro ao salvar: " + e.getMessage());
+			return false;
+		}
+	}
+
+	// lê a partida do arquivo; em caso de erro a partida atual (se houver) continua intacta
+	public boolean carregarJogo(String caminho) {
+		try {
+			this.jogo = ArquivoJogo.ler(caminho);
+		} catch (IOException e) {
+			System.out.println("Erro ao carregar: " + e.getMessage());
+			return false;
+		}
+		this.notificar(NOVO_JOGO);
+		return true;
 	}
 
 	public void novoJogo(int numJogadores) {
@@ -242,6 +292,10 @@ public class ModelFacade implements ObservadoIF {
 		return this.jogador(jogador).getCor().name();
 	}
 
+	public String nomeDoJogador(int jogador) {
+		return this.jogador(jogador).getNome();
+	}
+
 	public String herdeiroDoJogador(int jogador) {
 		return this.jogador(jogador).getHerdeiro().name();
 	}
@@ -390,6 +444,45 @@ public class ModelFacade implements ObservadoIF {
 	}
 
 	// ===================== PEÇAS DE BÔNUS =====================
+
+	// entrega no pergaminho ligado ao espaço de bônus (0 a numeroDeEspacosBonus() - 1)
+	public boolean entregarTesouros(int espaco) {
+		Turno turno = this.jogo().getTurnoAtual();
+		return turno != null && this.depois(turno.entregarTesouros(espaco), ESTADO);
+	}
+
+	public int paradaDaEntrega(int espaco) {
+		return this.entrega(espaco).getIdParada();
+	}
+
+	public int votosDaEntrega(int espaco) {
+		return this.entrega(espaco).getVotos();
+	}
+
+	// tesouros pedidos no pergaminho; "qualquer" para cada tesouro de tipo livre
+	public List<String> tesourosDaEntrega(int espaco) {
+		EntregaTesouros e = this.entrega(espaco);
+		List<String> nomes = new ArrayList<String>();
+		for (TipoTesouro t : e.getExigidos())
+			nomes.add(t.name());
+		for (int i = 0; i < e.getQuaisquer(); i++)
+			nomes.add("qualquer");
+		return nomes;
+	}
+
+	public List<String> pecasBonusDoJogador(int jogador) {
+		List<String> nomes = new ArrayList<String>();
+		for (TipoPecaBonus p : this.jogador(jogador).getPecasBonus())
+			nomes.add(p.name());
+		return nomes;
+	}
+
+	private EntregaTesouros entrega(int espaco) {
+		EntregaTesouros e = this.tabuleiro().getEntrega(espaco);
+		if (e == null)
+			throw new IllegalArgumentException("Espaço de bônus inexistente: " + espaco);
+		return e;
+	}
 
 	public int numeroDeEspacosBonus() {
 		return this.tabuleiro().numeroDeEspacosBonus();

@@ -108,6 +108,10 @@ class Parada {
 	 void colocarYurtInicial(Jogador j) { 
 		  	this.yurts.add(j);
 	 }
+
+	// recuperação de partida salva
+	void restaurarYurts(List<Jogador> donos) {
+		this.yurts.clear();
+		this.yurts.addAll(donos);
+	}
 }
-
-

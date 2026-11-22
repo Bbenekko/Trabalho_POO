@@ -16,7 +16,7 @@ public class JanelaFim extends JFrame implements ObservadorIF {
 
     public JanelaFim() {
         setTitle("Fim de jogo");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);   // a pergunta de nova partida decide o resto
         setResizable(false);
 
         lblVencedor.setFont(new Font("Serif", Font.BOLD, 22));
@@ -45,7 +45,7 @@ public class JanelaFim extends JFrame implements ObservadorIF {
         for (int j = 0; j < n; j++) {
             int trilha = modelo.votosDe(j);
             int total = modelo.pontuacaoFinal(j);
-            tabela.add(new JLabel((j + 1) + " (" + modelo.corDoJogador(j) + ")"));
+            tabela.add(new JLabel(modelo.nomeDoJogador(j) + " (" + modelo.corDoJogador(j) + ")"));
             tabela.add(new JLabel(modelo.herdeiroDoJogador(j)));
             tabela.add(new JLabel(String.valueOf(trilha)));
             tabela.add(new JLabel(String.valueOf(total - trilha)));
@@ -58,7 +58,7 @@ public class JanelaFim extends JFrame implements ObservadorIF {
             int v = vencedores.get(i);
             if (i > 0)
                 texto.append(" e ");
-            texto.append("jogador ").append(v + 1).append(" (").append(modelo.corDoJogador(v)).append(")");
+            texto.append(modelo.nomeDoJogador(v)).append(" (").append(modelo.corDoJogador(v)).append(")");
         }
         lblVencedor.setText(texto.toString());
 
