@@ -517,6 +517,31 @@ public class ModelFacade implements ObservadoIF {
 		return turno != null && this.depois(turno.usarPecaBonus(peca), ESTADO);
 	}
 
+	// baús: os tesouros tirados da pilha esperando a escolha do jogador da vez (vazia se nada pendente)
+	public List<String> tesourosDoBau() {
+		List<String> nomes = new ArrayList<String>();
+		Turno turno = this.jogo().getTurnoAtual();
+		if (turno != null)
+			for (TipoTesouro t : turno.getTesourosDoBau())
+				nomes.add(t.name());
+		return nomes;
+	}
+
+	public boolean escolherTesouroDoBau(int indice) {
+		Turno turno = this.jogo().getTurnoAtual();
+		return turno != null && this.depois(turno.escolherTesouroDoBau(indice), ESTADO);
+	}
+
+	// tesouros virtuais (melhorias de tesouro) ainda disponíveis no turno em andamento
+	public List<String> tesourosVirtuaisNoTurno() {
+		List<String> nomes = new ArrayList<String>();
+		Turno turno = this.jogo().getTurnoAtual();
+		if (turno != null)
+			for (TipoTesouro t : turno.getTesourosVirtuais())
+				nomes.add(t.name());
+		return nomes;
+	}
+
 	public boolean pecaBonusUsada(int jogador, int peca) {
 		return this.jogador(jogador).bonusUsado(peca);
 	}
@@ -598,6 +623,21 @@ public class ModelFacade implements ObservadoIF {
 		return this.jogo().pontuacaoFinal(this.jogador(jogador));
 	}
 
+	// votos de final de jogo pela maioria de yurts nas 3 regiões
+	public int votosDeInfluencia(int jogador) {
+		return this.jogo().votosDeInfluencia(this.jogador(jogador));
+	}
+
+	public int votosDeInfluencia(int jogador, String regiao) {
+		Regiao r = enumOuNull(Regiao.class, regiao);
+		return (r == null) ? 0 : this.jogo().votosDeInfluencia(this.jogador(jogador), r);
+	}
+
+	public int votosDaCartaSecreta(int jogador) {
+		return this.jogo().votosDaCartaSecreta(this.jogador(jogador));
+	}
+
+	// em ordem de desempate: mais votos, mais tesouros não entregues, mais perto de Karakorum
 	public List<Integer> vencedores() {
 		List<Integer> indices = new ArrayList<Integer>();
 		for (Jogador j : this.jogo().vencedores())
@@ -655,6 +695,12 @@ public class ModelFacade implements ObservadoIF {
 	public boolean pegarMelhoriaGratis(int posicao) {
 		Turno turno = this.jogo().getTurnoAtual();
 		return turno != null && this.depois(turno.pegarMelhoriaGratis(posicao), ESTADO);
+	}
+
+	// a melhoria grátis pode ser a do topo da pilha, às cegas
+	public boolean pegarMelhoriaGratisDaPilha() {
+		Turno turno = this.jogo().getTurnoAtual();
+		return turno != null && this.depois(turno.pegarMelhoriaGratisDaPilha(), ESTADO);
 	}
 
 	public String regiaoDaColuna(int jogador, int coluna) {

@@ -34,6 +34,15 @@ Salvamento e recuperacao (4a iteracao)
     BufferedReader + FileReader, como no Cap. 16).
   - Para recuperar: na janela inicial, "Carregar partida salva...".
 
+Pontuacao final e desempate (manual, pag. 14-16)
+  - Total = votos na trilha do Kurultai + influencia nas 3 regioes + carta de conselheiro secreto.
+  - Influencia: em cada regiao, quem tem mais yurts e o 2o com mais yurts ganham votos conforme o
+    numero de melhorias na coluna da regiao (1o: 1/1/2/2/3 e 2o: 0/1/1/2/2 para 0..4 melhorias).
+    Empate em 1o: todos ficam em 1o e ninguem em 2o. Yurts de cidades conquistadas contam; o yurt
+    inicial de Tolui em Karakorum nao conta.
+  - Desempate: mais tesouros nao entregues; depois, peao mais perto de Karakorum; se persistir,
+    a vitoria e compartilhada.
+
 Termino da partida
   Ao fim, a JanelaFim mostra a pontuacao e o vencedor e um dialogo pergunta se os jogadores
   querem uma nova partida: "Sim" reabre a janela de escolha dos personagens; "Nao" encerra.

@@ -1,5 +1,8 @@
 package model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 class CartaConselheiroAberto extends CartaConselheiro {
 	private TipoConselheiroAberto tipo;
 	private boolean retirada = false;
@@ -75,10 +78,29 @@ class CartaConselheiroAberto extends CartaConselheiro {
 		}
 	}
 
+	// progresso contando também os tesouros virtuais disponíveis no turno (melhorias de tesouro
+	// da coluna ativada), que valem para as cartas de tesouros
+	int progresso(Jogador j, Tabuleiro t, List<TipoTesouro> virtuais) {
+		if (this.tipo == TipoConselheiroAberto.quatro_tesouros)
+			return j.totalDeTesouros() + virtuais.size();
+		if (this.tipo == TipoConselheiroAberto.cinco_tesouros_diferentes) {
+			int tipos = 0;
+			for (TipoTesouro tt : TipoTesouro.values())
+				if (j.quantidadeTesouro(tt) > 0 || virtuais.contains(tt))
+					tipos++;
+			return tipos;
+		}
+		return this.progresso(j, t);
+	}
+
 	boolean verificar(Jogador j, Tabuleiro t) {
+		return this.verificar(j, t, new ArrayList<TipoTesouro>());
+	}
+
+	boolean verificar(Jogador j, Tabuleiro t, List<TipoTesouro> virtuais) {
 		if (this.retirada)
 			return false;
-		if (this.progresso(j, t) < this.meta())
+		if (this.progresso(j, t, virtuais) < this.meta())
 			return false;
 		t.getTrilha().registrarVotos(j, 1);
 		this.retirada = true;

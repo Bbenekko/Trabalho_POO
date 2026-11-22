@@ -115,6 +115,15 @@ class ColunaAcao
 		return n;
 	}
 
+	// tesouros virtuais (melhorias de tesouro) utilizáveis neste turno; cada um vale 1 tesouro do tipo dela
+	List<TipoTesouro> tesourosVirtuais(int turnoAtual) {
+		List<TipoTesouro> lista = new ArrayList<TipoTesouro>();
+		for (Melhoria m : this.melhorias)
+			if (m.getTipo() == TipoMelhoria.tesouro_virtual && m.getTesouro() != null && m.utilizavelNoTurno(turnoAtual))
+				lista.add(m.getTesouro());
+		return lista;
+	}
+
 	// recuperação de partida salva: estado e melhorias gravados no arquivo
 	void restaurar(boolean ativada, List<Melhoria> melhorias) {
 		this.ativada = ativada;

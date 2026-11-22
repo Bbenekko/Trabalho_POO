@@ -38,12 +38,40 @@ class EntregaTesouros {
 	// tesouros que o jogador entregaria aqui, ou null se não tem o suficiente.
 	// Para "quaisquer", usa primeiro os tipos de que o jogador tem mais.
 	List<TipoTesouro> tesourosAEntregar(Jogador j) {
-		List<TipoTesouro> lista = new ArrayList<TipoTesouro>(this.exigidos);
+		return this.tesourosAEntregar(j, new ArrayList<TipoTesouro>(), new ArrayList<TipoTesouro>());
+	}
+
+	// Com tesouros virtuais (melhorias de tesouro da coluna ativada): cada um cobre um tesouro daquele
+	// tipo e é usado antes dos reais. Devolve os tesouros REAIS a entregar (ou null) e põe em "usados"
+	// os virtuais consumidos.
+	List<TipoTesouro> tesourosAEntregar(Jogador j, List<TipoTesouro> virtuais, List<TipoTesouro> usados) {
+		List<TipoTesouro> sobra = new ArrayList<TipoTesouro>(virtuais);
+		List<TipoTesouro> exigidosReais = new ArrayList<TipoTesouro>();
+		List<TipoTesouro> virtuaisUsados = new ArrayList<TipoTesouro>();
+		for (TipoTesouro t : this.exigidos) {
+			if (sobra.remove(t))
+				virtuaisUsados.add(t);
+			else
+				exigidosReais.add(t);
+		}
+		int livres = this.quaisquer;
+		while (livres > 0 && !sobra.isEmpty()) {         // tesouros de qualquer tipo: virtuais primeiro
+			virtuaisUsados.add(sobra.remove(0));
+			livres--;
+		}
+		List<TipoTesouro> lista = this.reaisAEntregar(j, exigidosReais, livres);
+		if (lista != null)
+			usados.addAll(virtuaisUsados);
+		return lista;
+	}
+
+	private List<TipoTesouro> reaisAEntregar(Jogador j, List<TipoTesouro> exigidosReais, int quaisquer) {
+		List<TipoTesouro> lista = new ArrayList<TipoTesouro>(exigidosReais);
 		for (TipoTesouro t : TipoTesouro.values()) {
 			if (j.quantidadeTesouro(t) < Collections.frequency(lista, t))
 				return null;
 		}
-		for (int n = 0; n < this.quaisquer; n++) {
+		for (int n = 0; n < quaisquer; n++) {
 			TipoTesouro melhor = null;
 			int sobra = 0;
 			for (TipoTesouro t : TipoTesouro.values()) {

@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -457,6 +458,26 @@ class Tabuleiro {
 		return this.estoque;
 	}
 	
+	// número de passos (rotas) entre duas paradas; Integer.MAX_VALUE se não houver caminho
+	int distancia(Parada origem, Parada destino) {
+		Map<Parada, Integer> dist = new HashMap<Parada, Integer>();
+		LinkedList<Parada> fila = new LinkedList<Parada>();
+		dist.put(origem, 0);
+		fila.add(origem);
+		while (!fila.isEmpty()) {
+			Parada u = fila.removeFirst();
+			if (u == destino)
+				return dist.get(u);
+			for (Parada v : u.getVizinhas()) {
+				if (!dist.containsKey(v) && this.saoAdjacentes(u, v)) {
+					dist.put(v, dist.get(u) + 1);
+					fila.addLast(v);
+				}
+			}
+		}
+		return Integer.MAX_VALUE;
+	}
+
 	boolean saoAdjacentes(Parada a, Parada b) {
 		List<Parada> a_vizinhos = new ArrayList<Parada>();
 		List<Parada> b_vizinhos = new ArrayList<Parada>();

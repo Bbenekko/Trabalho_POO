@@ -35,8 +35,8 @@ public class JanelaFim extends JFrame implements ObservadorIF {
             return;
         int n = modelo.numeroDeJogadores();
         tabela.removeAll();
-        tabela.setLayout(new GridLayout(n + 1, 5, 16, 6));
-        String[] cabecalho = {"Jogador", "Herdeiro", "Kurultai", "Carta secreta", "Total"};
+        tabela.setLayout(new GridLayout(n + 1, 6, 16, 6));
+        String[] cabecalho = {"Jogador", "Herdeiro", "Kurultai", "Influência", "Carta secreta", "Total"};
         for (String c : cabecalho) {
             JLabel l = new JLabel(c);
             l.setFont(new Font("SansSerif", Font.BOLD, 13));
@@ -48,7 +48,8 @@ public class JanelaFim extends JFrame implements ObservadorIF {
             tabela.add(new JLabel(modelo.nomeDoJogador(j) + " (" + modelo.corDoJogador(j) + ")"));
             tabela.add(new JLabel(modelo.herdeiroDoJogador(j)));
             tabela.add(new JLabel(String.valueOf(trilha)));
-            tabela.add(new JLabel(String.valueOf(total - trilha)));
+            tabela.add(new JLabel(String.valueOf(modelo.votosDeInfluencia(j))));
+            tabela.add(new JLabel(String.valueOf(modelo.votosDaCartaSecreta(j))));
             tabela.add(new JLabel(String.valueOf(total)));
         }
 
