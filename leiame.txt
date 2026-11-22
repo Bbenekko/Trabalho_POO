@@ -3,38 +3,17 @@ Trabalho: Herdeiros de Khan (Java Swing, MVC)
 Professor: Ivan Mathias Filho
 
 Componentes do grupo
-  Nome: ______________________________   Matricula: 2311122
-  Nome: ______________________________   Matricula: 2310878
-  Nome: ______________________________   Matricula: 2310789
+  Nome: Bento Bruno Gonçalves      Matricula: 2311122
+  Nome: Caio Nabuco Vogel		   Matricula: 2310878
+  Nome: Oliver Hoerde   		   Matricula: 2310789
 
 Classe que contem o metodo main
   controller.ControladorJogo
 
-Video de apresentacao (Google Drive / Dropbox)
-  Link: ______________________________
+Video de apresentacao (Google Drive)
+  Link: https://drive.google.com/drive/folders/1bI6oVndFE0VRAhON1TnmhtjQWoLz41pU?usp=sharing
 
 Como executar
   No Eclipse: botao direito em src/controller/ControladorJogo.java > Run As > Java Application.
   O diretorio de trabalho deve ser a raiz do projeto (as imagens sao lidas de doc/img).
   Testes: pasta test, JUnit 4 (botao direito em test > Run As > JUnit Test).
-
-Padroes de projeto
-  Singleton: model.ModelFacade.getInstance() e controller.ControladorJogo.getInstance().
-  Facade:    model.ModelFacade e a unica classe publica do Model (alem das interfaces do Observer);
-             View e Controller so usam tipos simples (int, boolean, String e listas).
-  Observer:  model.ObservadoIF / model.ObservadorIF (Cap. 17). A ModelFacade e o observado;
-             PainelTabuleiro, PainelControles, JanelaCartela, JanelaCartas e JanelaFim sao
-             observadores e se registram por ControladorJogo.registra().
-
-Salvamento e recuperacao (4a iteracao)
-  - O botao "Salvar partida..." so fica habilitado imediatamente antes de o jogador da vez
-    comecar a jogar (antes de ativar uma coluna) e e desabilitado assim que ele comeca.
-  - O arquivo e escolhido com JFileChooser (nome e pasta livres; tipo .txt) e gravado em
-    texto ASCII puro por model.ArquivoJogo (PrintWriter + FileWriter; leitura com Scanner +
-    BufferedReader + FileReader, como no Cap. 16).
-  - Para recuperar: na janela inicial, "Carregar partida salva...".
-
-Termino da partida
-  Ao fim, a JanelaFim mostra a pontuacao e o vencedor e um dialogo pergunta se os jogadores
-  querem uma nova partida: "Sim" reabre a janela de escolha dos personagens; "Nao" encerra.
-  Fechar a janela do tabuleiro encerra a aplicacao a qualquer momento.
