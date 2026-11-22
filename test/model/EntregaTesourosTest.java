@@ -36,8 +36,58 @@ public class EntregaTesourosTest {
 		assertEquals(0, primeiro.totalDeTesouros());
 		assertEquals(2, jogo.getTabuleiro().getTrilha().votosDe(primeiro));
 		assertEquals(Arrays.asList(TipoPecaBonus.moedas), primeiro.getPecasBonus());
-		assertEquals(moedas + 2, primeiro.quantidadeTributo(TipoTributo.moeda));
+		assertEquals("A peça fica guardada até ser usada", moedas, primeiro.quantidadeTributo(TipoTributo.moeda));
 		assertNull(jogo.getTabuleiro().pecaBonusNoEspaco(ESPACO_KARAKORUM));
+
+		assertTrue(jogo.getTurnoAtual().usarPecaBonus(0));
+		assertEquals(moedas + 2, primeiro.quantidadeTributo(TipoTributo.moeda));
+		assertFalse("Cada peça só pode ser usada uma vez", jogo.getTurnoAtual().usarPecaBonus(0));
+		assertEquals("Usada, continua contando para as cartas", 1, primeiro.getPecasBonus().size());
+	}
+
+	@Test(timeout = TIMEOUT)
+	public void cavalosDaoMovimentosETributoNoTurno() {
+		primeiro.receberPecaBonus(TipoPecaBonus.cavalos);
+		assertTrue(jogo.iniciarTurno(0));
+		int mov = jogo.getTurnoAtual().getMovimentosRestantes();
+		int trib = jogo.getTurnoAtual().getTributosRestantes();
+		assertTrue(jogo.getTurnoAtual().usarPecaBonus(0));
+		assertEquals(mov + 3, jogo.getTurnoAtual().getMovimentosRestantes());
+		assertEquals(trib + 1, jogo.getTurnoAtual().getTributosRestantes());
+	}
+
+	@Test(timeout = TIMEOUT)
+	public void compraDaPilhaVaiParaAColunaDaRegiao() {
+		primeiro.receberTributo(TipoTributo.moeda, 2);
+		int moedas = primeiro.quantidadeTributo(TipoTributo.moeda);
+		AreaMelhorias area = jogo.getTabuleiro().getAreaMelhorias();
+		Melhoria topo = area.verTopo();
+		int pilha = area.tamanhoDaPilha();
+		assertTrue(jogo.iniciarTurno(0));
+
+		assertTrue(jogo.getTurnoAtual().comprarMelhoriaDaPilha(-1));
+		assertEquals(moedas - 2, primeiro.quantidadeTributo(TipoTributo.moeda));
+		assertEquals(pilha - 1, area.tamanhoDaPilha());
+		boolean achou = false;
+		for (ColunaAcao c : primeiro.getTabuleiro().getColunas())
+			if (c.getMelhorias().contains(topo)) {
+				achou = true;
+				assertEquals(topo.getRegiao(), c.getRegiao());
+			}
+		assertTrue(achou);
+	}
+
+	@Test(timeout = TIMEOUT)
+	public void compraDaPilhaSemMoedasEhRecusada() {
+		while (primeiro.quantidadeTributo(TipoTributo.moeda) > 0)
+			primeiro.gastar(TipoTributo.moeda, 1);
+		int pilha = jogo.getTabuleiro().getAreaMelhorias().tamanhoDaPilha();
+		assertTrue(jogo.iniciarTurno(1));                    // chagatai coluna 2: tem moeda virtual
+		int virtuais = jogo.getTurnoAtual().getVirtuais(TipoTributo.moeda);
+		boolean ok = jogo.getTurnoAtual().comprarMelhoriaDaPilha(-1);
+		assertEquals(virtuais >= 2, ok);
+		if (!ok)
+			assertEquals(pilha, jogo.getTabuleiro().getAreaMelhorias().tamanhoDaPilha());
 	}
 
 	@Test(timeout = TIMEOUT)

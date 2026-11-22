@@ -22,7 +22,7 @@ public class JanelaCartela extends JFrame implements ObservadorIF {
     private static final int LARGURA_CARTELA = 980;
     private static final int MARGEM = 16;
     private static final int LARGURA_CARTA = 140;
-    private static final int ALTURA_RECURSOS = 230;
+    private static final int ALTURA_RECURSOS = 244;
     private static final int ICONE = 36;          // tributos e tesouros na área de recursos
     private static final int PECA_BONUS = 64;     // peças de bônus ganhas
 
@@ -452,15 +452,27 @@ public class JanelaCartela extends JFrame implements ObservadorIF {
             FontMetrics fm = g2.getFontMetrics();
             x = MARGEM;
             int topo = y + 10;
-            for (String p : pecas) {
+            for (int i = 0; i < pecas.size(); i++) {
+                String p = pecas.get(i);
+                boolean usada = modelo.pecaBonusUsada(jogador, i);
                 int centro = x + PECA_BONUS / 2;
                 Image img = pecaBonus(p, PECA_BONUS);
-                if (img != null)
+                if (img != null) {
+                    Composite antes = g2.getComposite();
+                    if (usada)                               // já usada: imagem clarinha
+                        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.35f));
                     desenharCentrado(g2, img, centro, topo + PECA_BONUS / 2);
+                    g2.setComposite(antes);
+                }
                 String nome = nomesBonus.containsKey(p) ? nomesBonus.get(p) : p;
+                g2.setColor(Color.BLACK);
                 g2.drawString(nome, centro - fm.stringWidth(nome) / 2, topo + PECA_BONUS + 16);
+                String estado = usada ? "usada" : "guardada";
+                g2.setColor(usada ? Color.GRAY : new Color(0, 110, 0));
+                g2.drawString(estado, centro - fm.stringWidth(estado) / 2, topo + PECA_BONUS + 30);
                 x += PECA_BONUS + 30;
             }
+            g2.setColor(Color.BLACK);
         }
 
         private void desenharCentrado(Graphics2D g2, Image img, int cx, int cy) {

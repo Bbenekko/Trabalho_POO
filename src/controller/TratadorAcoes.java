@@ -16,7 +16,11 @@ class TratadorAcoes implements ActionListener {
     static final String VER_CARTAS = "VER_CARTAS";
     static final String CARREGAR = "CARREGAR";
     static final String SALVAR = "SALVAR";
+    static final String COMPRAR_PILHA = "COMPRAR_PILHA";
+    static final String USAR_BONUS = "USAR_BONUS";
     static final String ATACAR = "ATACAR:";
+    static final String OGEDEI = "OGEDEI:";
+    static final String TROCAR_ESPADA = "TROCAR_ESPADA";
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -26,6 +30,11 @@ class TratadorAcoes implements ActionListener {
         if (comando.startsWith(ATACAR)) {
             String[] partes = comando.split(":");
             c.atacar(partes[1], partes[2]);
+            return;
+        }
+        if (comando.startsWith(OGEDEI)) {
+            String[] partes = comando.split(":");
+            c.comprarTesouroDeOgedei(partes[1], partes[2]);
             return;
         }
         switch (comando) {
@@ -41,6 +50,9 @@ class TratadorAcoes implements ActionListener {
             case VER_CARTAS:      c.verCartas(); break;
             case CARREGAR:        c.carregarPartida(); break;
             case SALVAR:          c.salvarPartida(); break;
+            case COMPRAR_PILHA:   c.comprarMelhoriaDaPilha(); break;
+            case USAR_BONUS:      c.usarPecaBonus(); break;
+            case TROCAR_ESPADA:   c.trocarMovimentoPorEspada(); break;
             default:              break;
         }
     }

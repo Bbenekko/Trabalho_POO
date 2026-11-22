@@ -53,17 +53,16 @@ class PainelControles extends JPanel implements ObservadorIF {
     private LinhaIcones linhaReserva = new LinhaIcones(LARGURA_LINHA);
     // só valem no turno em andamento
     private LinhaIcones linhaAcoes = new LinhaIcones(LARGURA_LINHA);
-    private LinhaIcones linhaVirtuais = new LinhaIcones(LARGURA_LINHA);
     private LinhaIcones linhaSituacao = new LinhaIcones(LARGURA_LINHA);
     // informações gerais da partida
     private LinhaIcones linhaRodada = new LinhaIcones(LARGURA_LINHA);
     private LinhaIcones linhaVotos = new LinhaIcones(LARGURA_LINHA);
-    private LinhaIcones linhaKurultai = new LinhaIcones(LARGURA_LINHA);
     private LinhaIcones linhaFim = new LinhaIcones(LARGURA_LINHA);
     private LinhaIcones linhaKhan = new LinhaIcones(LARGURA_LINHA);
 
     private JComboBox<String> colunas = new JComboBox<String>();
-    private JButton ativar = new JButton("Ativar coluna");
+    private JButton ativar = new JButton("Ativar");
+    private JPanel linhaBonus;                 // combo + "Usar"; só aparece se houver peça guardada
     private JComboBox<String> modos = new JComboBox<String>();
     private JButton khanMelhorias = new JButton("Khan → melhorias");
     private JButton encerrar = new JButton("Encerrar turno");
@@ -71,15 +70,19 @@ class PainelControles extends JPanel implements ObservadorIF {
     private JComboBox<String> melhorias = new JComboBox<String>();
     private JComboBox<String> colunaDestino = new JComboBox<String>();
     private JButton comprar = new JButton("Comprar");
-    private JButton gratis = new JButton("Pegar grátis");
+    private JButton comprarPilha = new JButton("Da pilha");
+    private JComboBox<String> bonus = new JComboBox<String>();
+    private JButton usarBonus = new JButton("Usar");
+    private JButton trocarEspada = new JButton("Chagatai: 1 movimento → 1 espada");   // só aparece para Chagatai
+    private java.util.List<Integer> indicesBonus = new java.util.ArrayList<Integer>();   // item do combo → peça do jogador
+    private JButton gratis = new JButton("Grátis");
 
-    private JButton verCartela = new JButton("Minha cartela");
+    private JButton verCartela = new JButton("Cartela");
     private JButton verCartas = new JButton("Cartas");
-    private JButton salvar = new JButton("Salvar partida...");
+    private JButton salvar = new JButton("Salvar...");
     private JLabel lblAviso = new JLabel(" ");
 
     PainelControles() {
-        setPreferredSize(new Dimension(LARGURA, 300));
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(BorderFactory.createEmptyBorder(MARGEM, MARGEM, MARGEM, MARGEM));
 
@@ -105,35 +108,42 @@ class PainelControles extends JPanel implements ObservadorIF {
 
         adicionar(secao("Neste turno", "somem ao encerrar"));
         adicionar(linhaAcoes);
-        adicionar(linhaVirtuais);
         adicionar(linhaSituacao);
+        linhaBonus = comBotao(bonus, usarBonus);
+        adicionar(linhaBonus);
+        trocarEspada.setFont(new Font("SansSerif", Font.BOLD, 12));
+        trocarEspada.setMargin(new Insets(2, 2, 2, 2));
+        trocarEspada.setToolTipText("1x por turno: deixa de usar 1 cavalo (movimento) para ganhar 1 espada");
+        adicionar(trocarEspada);
 
         adicionar(secao("Partida", null));
         adicionar(linhaRodada);
         adicionar(linhaVotos);
-        adicionar(linhaKurultai);
         adicionar(linhaFim);
         adicionar(linhaKhan);
 
         // botões do mesmo grupo lado a lado, para a lateral caber em telas mais baixas
         adicionar(titulo("Turno"));
-        adicionar(colunas);
-        adicionar(ativar);
+        adicionar(comBotao(colunas, ativar));
         adicionar(espaco(3));
         adicionar(modos);
         adicionar(espaco(3));
         adicionar(lado(khanMelhorias, encerrar));
 
-        comprar.setToolTipText("Custa 2 moedas; a melhoria vai para a coluna escolhida acima");
+        comprar.setToolTipText("Custa 2 moedas; a melhoria escolhida vai para a coluna escolhida acima");
+        comprarPilha.setToolTipText("Custa 2 moedas; compra às cegas a do topo da pilha, que vai para a coluna da região dela");
+        gratis.setToolTipText("Pegar a melhoria grátis da linha completa (vai para a coluna branca)");
+        verCartela.setToolTipText("Ver a cartela do jogador da vez");
+        verCartas.setToolTipText("Ver as cartas de conselheiro abertas e a sua secreta");
+        salvar.setToolTipText("Salvar a partida (só antes de o jogador da vez começar)");
+        usarBonus.setToolTipText("Usa a peça de bônus escolhida (uma vez só); ela continua contando para as cartas");
         adicionar(titulo("Melhorias expostas (compra: 2 moedas)"));
         adicionar(melhorias);
         adicionar(colunaDestino);
-        adicionar(lado(comprar, gratis));
+        adicionar(lado(comprar, comprarPilha, gratis));
 
         adicionar(titulo("Consultas e partida"));
-        adicionar(lado(verCartela, verCartas));
-        adicionar(espaco(3));
-        adicionar(salvar);
+        adicionar(lado(verCartela, verCartas, salvar));
         adicionar(espaco(6));
         adicionar(lblAviso);
         add(Box.createVerticalGlue());
@@ -149,12 +159,25 @@ class PainelControles extends JPanel implements ObservadorIF {
         return l;
     }
 
-    // dois botões dividindo a largura da lateral
-    private JPanel lado(JButton a, JButton b) {
-        JPanel p = new JPanel(new GridLayout(1, 2, 6, 0));
+    // combo ocupando a largura e um botão pequeno à direita
+    private JPanel comBotao(JComboBox<String> combo, JButton botao) {
+        JPanel p = new JPanel(new BorderLayout(6, 0));
         p.setOpaque(false);
-        for (JButton x : new JButton[] {a, b}) {
-            x.setMargin(new Insets(2, 4, 2, 4));
+        botao.setMargin(new Insets(2, 6, 2, 6));
+        botao.setFont(new Font("SansSerif", Font.BOLD, 12));
+        p.add(combo, BorderLayout.CENTER);
+        p.add(botao, BorderLayout.EAST);
+        p.setMaximumSize(new Dimension(LARGURA_LINHA, 28));
+        return p;
+    }
+
+    // botões dividindo a largura da lateral
+    private JPanel lado(JButton... botoes) {
+        JPanel p = new JPanel(new GridLayout(1, botoes.length, 6, 0));
+        p.setOpaque(false);
+        for (JButton x : botoes) {
+            x.setMargin(new Insets(2, 2, 2, 2));
+            x.setFont(new Font("SansSerif", Font.BOLD, 12));   // tamanho fixo: cabe igual em qualquer sistema
             p.add(x);
         }
         p.setMaximumSize(new Dimension(LARGURA_LINHA, 28));
@@ -270,10 +293,21 @@ class PainelControles extends JPanel implements ObservadorIF {
         khanMelhorias.setEnabled(emTurno && !modelo.khanUsado() && !fim);
         comprar.setEnabled(emTurno && !expostas.isEmpty() && !fim);
         gratis.setEnabled(emTurno && modelo.melhoriaGratisDisponivel() && !fim);
+        comprarPilha.setEnabled(emTurno && modelo.melhoriasNaPilha() > 0 && !fim);
+        usarBonus.setEnabled(emTurno && !indicesBonus.isEmpty() && !fim);
+        trocarEspada.setVisible(emTurno && !fim && modelo.herdeiroDoJogador(modelo.jogadorDaVez()).equals("chagatai"));
+        trocarEspada.setEnabled(modelo.turnoEmAndamento() && modelo.podeTrocarMovimentoPorEspada());
+        bonus.setEnabled(!indicesBonus.isEmpty());
         // 4ª iteração: só dá para salvar imediatamente antes de o jogador da vez começar a jogar
         salvar.setEnabled(modelo.podeSalvar());
         revalidate();
         repaint();
+    }
+
+    // largura fixa; a altura é a que o BoxLayout precisa (a JanelaJogo põe a lateral numa rolagem)
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(LARGURA, getLayout().preferredLayoutSize(this).height);
     }
 
     // ---------- BLOCOS DE INFORMAÇÃO ----------
@@ -296,14 +330,50 @@ class PainelControles extends JPanel implements ObservadorIF {
         linhaReserva.texto("Bônus:", Color.BLACK);
         if (pecas.isEmpty())
             linhaReserva.texto("nenhum", COR_DICA);
-        for (String p : pecas)
-            linhaReserva.item(icones.get("bonus:" + p), "");
+        for (int i = 0; i < pecas.size(); i++) {
+            Image icone = icones.get("bonus:" + pecas.get(i));
+            if (modelo.pecaBonusUsada(vez, i))
+                linhaReserva.itemApagado(icone, "");       // já usada: aparece clarinha
+            else
+                linhaReserva.item(icone, "");
+        }
+
+        // peças guardadas que ainda podem ser usadas
+        bonus.removeAllItems();
+        indicesBonus.clear();
+        for (int i = 0; i < pecas.size(); i++) {
+            if (modelo.pecaBonusUsada(vez, i))
+                continue;
+            indicesBonus.add(i);
+            bonus.addItem(descricaoBonus(pecas.get(i)));
+        }
+        if (indicesBonus.isEmpty())
+            bonus.addItem("Nenhuma peça de bônus guardada");
+        linhaBonus.setVisible(!indicesBonus.isEmpty());     // sem peça guardada, a linha nem aparece
+    }
+
+    private static String descricaoBonus(String peca) {
+        switch (peca) {
+            case "cavalos": return "Cavalos: +3 mov. e +1 tributo";
+            case "maos":    return "Mãos: +2 tributos";
+            case "voto":    return "Voto: +1 voto";
+            case "yurts":   return "Yurts: +2 fichas de yurt";
+            case "espadas": return "Espadas: +2 espadas";
+            case "moedas":  return "Moedas: +2 moedas";
+            case "tesouro": return "Tesouro: +1 tesouro";
+            default:        return peca;
+        }
+    }
+
+    // índice (na lista de peças do jogador) da peça escolhida no combo, ou -1
+    int bonusEscolhido() {
+        int i = bonus.getSelectedIndex();
+        return (i < 0 || i >= indicesBonus.size()) ? -1 : indicesBonus.get(i);
     }
 
     // vale só até o fim do turno: movimentos, ações de tributo e recursos virtuais da coluna ativada
     private void atualizarTurno() {
         linhaAcoes.limpar();
-        linhaVirtuais.limpar();
         linhaSituacao.limpar();
         if (modelo.jogoTerminou()) {
             linhaSituacao.texto("Partida encerrada", COR_ALERTA);
@@ -315,20 +385,19 @@ class PainelControles extends JPanel implements ObservadorIF {
         }
         linhaAcoes.item(icones.get("movimentos"), qtd(modelo.movimentosRestantes(), "movimento", "movimentos"));
         linhaAcoes.item(icones.get("acoes_tributo"), qtd(modelo.tributosRestantes(), "tributo", "tributos"));
-
-        boolean algum = false;
+        // recursos virtuais da coluna: ícone com anel roxo tracejado e a quantidade
         for (String t : TRIBUTOS) {
             int n = modelo.virtuaisNoTurno(t);
-            if (n > 0) {
-                linhaVirtuais.itemVirtual(icones.get(t), qtd(n, "virtual", "virtuais"));
-                algum = true;
-            }
+            if (n > 0)
+                linhaAcoes.itemVirtual(icones.get(t), String.valueOf(n));
         }
-        if (!algum)
-            linhaVirtuais.texto("Sem recursos virtuais", COR_DICA);
 
+        if (modelo.precisaEscolherPeao())
+            linhaSituacao.texto("Escolha o peão (clique nele)", COR_ALERTA);
+        else if (modelo.numeroDePeoes(modelo.jogadorDaVez()) > 1)
+            linhaSituacao.texto("Peão " + (modelo.peaoDoTurno() + 1) + " age neste turno", COR_DICA);
         if (!modelo.podeEncerrarTurno())
-            linhaSituacao.texto("Use o Khan antes de encerrar!", COR_ALERTA);
+            linhaSituacao.texto("Use o Khan!", COR_ALERTA);
         else if (modelo.khanUsado())
             linhaSituacao.texto("Khan já usado neste turno", COR_DICA);
     }
@@ -342,22 +411,21 @@ class PainelControles extends JPanel implements ObservadorIF {
         if (modelo.fimDisparado() && !modelo.jogoTerminou())
             linhaRodada.texto("ÚLTIMA RODADA", COR_ALERTA);
 
+        // seus votos e, com a ficha branca, a soma dos votos de todos no Kurultai
         linhaVotos.limpar();
         linhaVotos.item(icones.get("votos"), "Seus votos: " + modelo.votosDe(vez));
+        linhaVotos.item(icones.get("ficha_neutra"), "Todos: " + modelo.fichaNeutra());
 
-        // a ficha branca soma os votos de todos; quando chega ao marco do nº de jogadores, a partida acaba
-        linhaKurultai.limpar();
-        linhaKurultai.item(icones.get("ficha_neutra"), "Votos de todos: " + modelo.fichaNeutra()
-                + " (fim em " + modelo.limiteKurultai() + ")");
-
+        // quando a ficha branca chega ao marco do nº de jogadores, começa a última rodada
         linhaFim.limpar();
         int faltam = modelo.votosParaOFim();
+        String fim = "Fim em " + modelo.limiteKurultai() + " votos: ";
         if (modelo.jogoTerminou())
             linhaFim.texto("Partida encerrada", COR_ALERTA);
         else if (faltam > 0)
-            linhaFim.texto("Faltam " + qtd(faltam, "voto", "votos") + " para a última rodada", COR_DICA);
+            linhaFim.texto(fim + "faltam " + faltam, COR_DICA);
         else
-            linhaFim.texto("Limite atingido: a partida acaba nesta rodada", COR_ALERTA);
+            linhaFim.texto(fim + "limite atingido", COR_ALERTA);
 
         int prov = modelo.provinciaDoKhan();
         linhaKhan.limpar();
@@ -423,6 +491,9 @@ class PainelControles extends JPanel implements ObservadorIF {
     JButton getBtnKhanMelhorias() { return khanMelhorias; }
     JButton getBtnComprar() { return comprar; }
     JButton getBtnMelhoriaGratis() { return gratis; }
+    JButton getBtnComprarPilha() { return comprarPilha; }
+    JButton getBtnUsarBonus() { return usarBonus; }
+    JButton getBtnTrocarEspada() { return trocarEspada; }
     JButton getBtnVerCartela() { return verCartela; }
     JButton getBtnVerCartas() { return verCartas; }
     JButton getBtnSalvar() { return salvar; }

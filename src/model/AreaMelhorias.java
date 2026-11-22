@@ -60,6 +60,10 @@ class AreaMelhorias {
 	    return this.expostas.remove(posicao);  
 	}
 	
+	Melhoria verTopo() {
+		return this.pilha.isEmpty() ? null : this.pilha.peek();
+	}
+
 	Melhoria comprarDoTopo(){
 		if (this.pilha.isEmpty())
 			return null;

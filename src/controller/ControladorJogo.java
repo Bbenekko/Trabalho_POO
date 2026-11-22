@@ -179,6 +179,9 @@ public class ControladorJogo {
         registrarBotao(janela.getBtnVerCartela(), TratadorAcoes.VER_CARTELA);
         registrarBotao(janela.getBtnVerCartas(), TratadorAcoes.VER_CARTAS);
         registrarBotao(janela.getBtnSalvar(), TratadorAcoes.SALVAR);
+        registrarBotao(janela.getBtnComprarPilha(), TratadorAcoes.COMPRAR_PILHA);
+        registrarBotao(janela.getBtnUsarBonus(), TratadorAcoes.USAR_BONUS);
+        registrarBotao(janela.getBtnTrocarEspada(), TratadorAcoes.TROCAR_ESPADA);
     }
 
     private void registrarBotao(javax.swing.AbstractButton b, String comando) {
@@ -194,6 +197,25 @@ public class ControladorJogo {
         janela.getPainelTabuleiro().selecionarPeao(-1, -1);
         if (!modelo.ativarColuna(coluna))
             janela.mostrarAviso("Coluna " + (coluna + 1) + " indisponível (já usada ou turno em andamento)");
+        else if (modelo.precisaEscolherPeao())
+            janela.mostrarAviso("Altani: clique no peão que vai agir neste turno. O outro fica parado até o próximo turno.");
+        else if (modelo.podeComprarTesouroDeOgedei())
+            janela.mostrarAviso("Ogedei: 1x por turno, no modo \"Clique ataca cidade\", pague 1 moeda por 1 tesouro"
+                    + " de qualquer cidade (menos o último dela)");
+        else if (modelo.melhoriaEmQualquerColuna(modelo.jogadorDaVez()))
+            janela.mostrarAviso("Jochi: suas melhorias podem ir para qualquer coluna, de qualquer cor");
+    }
+
+    // Chagatai: deixa de usar 1 movimento para ganhar 1 espada (1x por turno)
+    void trocarMovimentoPorEspada() {
+        if (!modelo.trocarMovimentoPorEspada())
+            janela.mostrarAviso("Troca recusada: só Chagatai, 1x por turno e com movimento sobrando");
+    }
+
+    // Ogedei: 1 moeda por 1 tesouro de qualquer cidade (1x por turno)
+    void comprarTesouroDeOgedei(String cidade, String tesouro) {
+        if (!modelo.comprarTesouroDeOgedei(cidade, tesouro))
+            janela.mostrarAviso("Ogedei: precisa de 1 moeda, só 1x por turno e não pode levar o último tesouro da cidade");
     }
 
     void encerrarTurno() {
@@ -225,6 +247,22 @@ public class ControladorJogo {
             janela.mostrarAviso("Linha completa! Escolha uma melhoria e clique em \"Pegar grátis\"");
     }
 
+    void comprarMelhoriaDaPilha() {
+        // Jochi escolhe a coluna (combo "Para a coluna"); os outros recebem na coluna da região sorteada
+        if (!modelo.comprarMelhoriaDaPilha(janela.getComboColunaDestino().getSelectedIndex())) {
+            janela.mostrarAviso("Compra da pilha recusada: precisa de 2 moedas e de espaço na coluna da região sorteada");
+            return;
+        }
+        if (modelo.melhoriaGratisDisponivel())
+            janela.mostrarAviso("Linha completa! Escolha uma melhoria e clique em \"Pegar grátis\"");
+    }
+
+    void usarPecaBonus() {
+        int peca = janela.getBonusEscolhido();
+        if (peca < 0 || !modelo.usarPecaBonus(peca))
+            janela.mostrarAviso("Não há peça de bônus para usar agora (só no seu turno, uma vez cada)");
+    }
+
     void pegarMelhoriaGratis() {
         int posicao = janela.getComboMelhorias().getSelectedIndex();
         if (posicao < 0 || !modelo.pegarMelhoriaGratis(posicao))
@@ -248,7 +286,14 @@ public class ControladorJogo {
         if (painel.emModoMedicao())
             return;
 
-        switch (janela.getComboModo().getSelectedIndex()) {
+        int modo = janela.getComboModo().getSelectedIndex();
+        // Altani: antes da 1ª ação com peão (tudo menos o Khan), o jogador escolhe qual peão age no turno
+        if (modo != KHAN && modelo.turnoEmAndamento() && modelo.precisaEscolherPeao()) {
+            escolherPeaoDoTurno(painel, x, y);
+            return;
+        }
+
+        switch (modo) {
             case MOVER:   cliqueMover(painel, x, y); break;
             case TRIBUTO: cliqueTributo(painel, x, y); break;
             case KHAN:    cliqueKhan(painel, x, y); break;
@@ -258,14 +303,34 @@ public class ControladorJogo {
         }
     }
 
+    private void escolherPeaoDoTurno(PainelTabuleiro painel, int x, int y) {
+        int vez = modelo.jogadorDaVez();
+        int[] peao = painel.peaoEm(x, y);
+        if (peao == null || peao[0] != vez) {
+            janela.mostrarAviso("Antes da primeira ação, clique no peão de Altani que vai agir neste turno");
+            return;
+        }
+        peaoSelecionado = peao[1];
+        modelo.escolherPeao(peao[1]);
+        painel.selecionarPeao(vez, peao[1]);
+        janela.mostrarAviso("Peão " + (peao[1] + 1) + " vai agir até o fim do turno");
+    }
+
     private void cliqueMover(PainelTabuleiro painel, int x, int y) {
         int[] peao = painel.peaoEm(x, y);
         if (peao != null && peao[0] == modelo.jogadorDaVez()) {
+            int doTurno = modelo.peaoDoTurno();
+            if (doTurno != -1 && doTurno != peao[1]) {
+                janela.mostrarAviso("Neste turno só o peão " + (doTurno + 1) + " pode agir");
+                return;
+            }
             peaoSelecionado = peao[1];
             painel.selecionarPeao(peao[0], peao[1]);
             janela.mostrarAviso("Peão " + (peao[1] + 1) + " selecionado");
             return;
         }
+        if (modelo.peaoDoTurno() != -1)
+            peaoSelecionado = modelo.peaoDoTurno();
         int id = painel.paradaEm(x, y);
         if (id == -1)
             return;  
@@ -327,7 +392,8 @@ public class ControladorJogo {
             janela.mostrarAviso(cidade + " não tem tesouros para atacar");
             return;
         }
-        painel.mostrarMenuAtaque(cidade, tesouros, modelo.custoAtaque(cidade), x, y, tratadorAcoes);
+        boolean comOgedei = modelo.podeComprarTesouroDeOgedei() && tesouros.size() > 1;
+        painel.mostrarMenuAtaque(cidade, tesouros, modelo.custoAtaque(cidade), comOgedei, x, y, tratadorAcoes);
     }
 
     void atacar(String cidade, String tesouro) {

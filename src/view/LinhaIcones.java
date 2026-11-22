@@ -18,6 +18,7 @@ class LinhaIcones extends JPanel {
     private List<String> textos = new ArrayList<String>();
     private List<Boolean> virtuais = new ArrayList<Boolean>();
     private List<Color> cores = new ArrayList<Color>();
+    private List<Boolean> apagados = new ArrayList<Boolean>();
 
     LinhaIcones(int largura) {
         Dimension d = new Dimension(largura, ALTURA);
@@ -33,6 +34,7 @@ class LinhaIcones extends JPanel {
         textos.clear();
         virtuais.clear();
         cores.clear();
+        apagados.clear();
         setVisible(false);
     }
 
@@ -48,7 +50,15 @@ class LinhaIcones extends JPanel {
         adicionar(null, texto, false, cor);
     }
 
+    // ícone clarinho, para algo que já foi gasto (ex.: peça de bônus usada)
+    void itemApagado(Image icone, String texto) {
+        adicionar(icone, texto, false, Color.GRAY);
+        apagados.set(apagados.size() - 1, true);
+        repaint();
+    }
+
     private void adicionar(Image icone, String texto, boolean virtual, Color cor) {
+        apagados.add(false);
         icones.add(icone);
         textos.add(texto);
         virtuais.add(virtual);
@@ -71,7 +81,11 @@ class LinhaIcones extends JPanel {
         for (int i = 0; i < textos.size(); i++) {
             Image icone = icones.get(i);
             if (icone != null) {
+                Composite antes = g2.getComposite();
+                if (apagados.get(i))
+                    g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f));
                 g2.drawImage(icone, x + (ICONE - icone.getWidth(null)) / 2, y + (ICONE - icone.getHeight(null)) / 2, null);
+                g2.setComposite(antes);
                 if (virtuais.get(i)) {
                     g2.setColor(COR_VIRTUAL);
                     g2.setStroke(new BasicStroke(1.6f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1f,

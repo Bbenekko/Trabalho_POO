@@ -17,6 +17,7 @@ class Jogador
 	private Map<TipoTesouro, Integer> tesouros = new HashMap<TipoTesouro, Integer>();
 	private int yurtsRestantes = 12;
 	private List<TipoPecaBonus> pecasBonus = new ArrayList<TipoPecaBonus>();
+	private List<Boolean> bonusUsados = new ArrayList<Boolean>();     // mesmo índice de pecasBonus
 	private CartaConselheiroSecreto cartaSecreta = null;                
     
 	Jogador(Cor cor, Herdeiro herdeiro) {
@@ -142,16 +143,32 @@ class Jogador
 
 	// ---------- peças de bônus ganhas nas entregas de tesouros ----------
 
+	// a peça fica guardada até o jogador decidir usá-la; usada ou não, continua contando para as cartas
 	void receberPecaBonus(TipoPecaBonus p) {
 		this.pecasBonus.add(p);
+		this.bonusUsados.add(false);
+	}
+
+	boolean bonusUsado(int i) {
+		return this.bonusUsados.get(i);
+	}
+
+	// marca a peça i como usada e devolve o tipo dela; null se não existe ou já foi usada
+	TipoPecaBonus usarPecaBonus(int i) {
+		if (i < 0 || i >= this.pecasBonus.size() || this.bonusUsados.get(i))
+			return null;
+		this.bonusUsados.set(i, true);
+		return this.pecasBonus.get(i);
 	}
 
 	List<TipoPecaBonus> getPecasBonus() {
 		return Collections.unmodifiableList(this.pecasBonus);
 	}
 
-	void definirPecasBonus(List<TipoPecaBonus> pecas) {
+	void definirPecasBonus(List<TipoPecaBonus> pecas, List<Boolean> usados) {
 		this.pecasBonus.clear();
 		this.pecasBonus.addAll(pecas);
+		this.bonusUsados.clear();
+		this.bonusUsados.addAll(usados);
 	}
 }

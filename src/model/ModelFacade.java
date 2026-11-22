@@ -316,7 +316,32 @@ public class ModelFacade implements ObservadoIF {
 	}
 
 	public boolean peaoPodeAgir(int jogador, int peao) {
-		return this.jogador(jogador).getPeoes().get(peao).podeAgir();
+		// no turno em andamento, só o peão escolhido (Altani) age; fora de turno, qualquer um pode vir a agir
+		Turno turno = this.jogo().getTurnoAtual();
+		if (turno == null || jogador != this.jogadorDaVez())
+			return true;
+		Peao p = this.jogador(jogador).getPeoes().get(peao);
+		return turno.getPeaoEscolhido() == null || turno.getPeaoEscolhido() == p;
+	}
+
+	// Altani: o turno começou e ainda falta escolher qual dos 2 peões vai agir
+	public boolean precisaEscolherPeao() {
+		Turno turno = this.jogo().getTurnoAtual();
+		return turno != null && turno.precisaEscolherPeao();
+	}
+
+	public boolean escolherPeao(int peao) {
+		Turno turno = this.jogo().getTurnoAtual();
+		Peao p = this.peaoDaVez(peao);
+		return turno != null && p != null && this.depois(turno.escolherPeao(p), ESTADO);
+	}
+
+	// índice do peão que age no turno em andamento, ou -1 (sem turno ou Altani ainda não escolheu)
+	public int peaoDoTurno() {
+		Turno turno = this.jogo().getTurnoAtual();
+		if (turno == null || turno.getPeaoEscolhido() == null)
+			return -1;
+		return this.jogo().jogadorDaVez().getPeoes().indexOf(turno.getPeaoEscolhido());
 	}
 
 	public int tributosDoJogador(int jogador, String tipo) {
@@ -484,6 +509,64 @@ public class ModelFacade implements ObservadoIF {
 		for (int i = 0; i < e.getQuaisquer(); i++)
 			nomes.add("qualquer");
 		return nomes;
+	}
+
+	// usa a peça de bônus de índice "peca" (na lista de pecasBonusDoJogador) do jogador da vez
+	public boolean usarPecaBonus(int peca) {
+		Turno turno = this.jogo().getTurnoAtual();
+		return turno != null && this.depois(turno.usarPecaBonus(peca), ESTADO);
+	}
+
+	public boolean pecaBonusUsada(int jogador, int peca) {
+		return this.jogador(jogador).bonusUsado(peca);
+	}
+
+	// compra às cegas a melhoria do topo da pilha (2 moedas); vai para a coluna da região dela
+	public boolean comprarMelhoriaDaPilha() {
+		return this.comprarMelhoriaDaPilha(-1);
+	}
+
+	// colunaPreferida (0 a 2) só é usada por Jochi, que não precisa seguir a cor das melhorias
+	public boolean comprarMelhoriaDaPilha(int colunaPreferida) {
+		Turno turno = this.jogo().getTurnoAtual();
+		return turno != null && this.depois(turno.comprarMelhoriaDaPilha(colunaPreferida), ESTADO);
+	}
+
+	// Jochi pode pôr qualquer melhoria em qualquer coluna
+	public boolean melhoriaEmQualquerColuna(int jogador) {
+		return this.jogador(jogador).getTabuleiro().aceitaQualquerCor();
+	}
+
+	// ----- Chagatai: trocar 1 movimento por 1 espada (1x por turno) -----
+
+	public boolean podeTrocarMovimentoPorEspada() {
+		Turno turno = this.jogo().getTurnoAtual();
+		return turno != null && turno.podeTrocarMovimentoPorEspada();
+	}
+
+	public boolean trocarMovimentoPorEspada() {
+		Turno turno = this.jogo().getTurnoAtual();
+		return turno != null && this.depois(turno.trocarMovimentoPorEspada(), ESTADO);
+	}
+
+	// ----- Ogedei: pagar 1 moeda por 1 tesouro de qualquer cidade (1x por turno) -----
+
+	public boolean podeComprarTesouroDeOgedei() {
+		Turno turno = this.jogo().getTurnoAtual();
+		return turno != null && turno.podeComprarTesouroDeOgedei();
+	}
+
+	public boolean comprarTesouroDeOgedei(String nomeCidade, String tesouro) {
+		Turno turno = this.jogo().getTurnoAtual();
+		Cidade c = this.tabuleiro().getCidade(nomeCidade);
+		TipoTesouro t = enumOuNull(TipoTesouro.class, tesouro);
+		if (turno == null || c == null || t == null)
+			return false;
+		return this.depois(turno.comprarTesouroDeOgedei(c, t), ESTADO);
+	}
+
+	public int melhoriasNaPilha() {
+		return this.tabuleiro().getAreaMelhorias().tamanhoDaPilha();
 	}
 
 	public List<String> pecasBonusDoJogador(int jogador) {

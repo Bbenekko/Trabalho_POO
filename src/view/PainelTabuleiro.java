@@ -20,7 +20,7 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
 
     private static final int LARGURA_MAXIMA = 1080;
     private static final int ALTURA_MAXIMA = 1000;
-    private static final int LARGURA_LATERAL = PainelControles.LARGURA;
+    private static final int LARGURA_LATERAL = PainelControles.LARGURA + 20;   // + barra de rolagem
     private static final int BARRA_DE_TITULO = 40;
 
     private static final int RAIO_PARADA = 75;
@@ -510,6 +510,12 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
 
     public void mostrarMenuAtaque(String cidade, List<String> tesouros, int custo, int x, int y,
                                   ActionListener tratador) {
+        mostrarMenuAtaque(cidade, tesouros, custo, false, x, y, tratador);
+    }
+
+    // comOgedei: acrescenta a habilidade de Ogedei (1 moeda por 1 tesouro, de qualquer cidade)
+    public void mostrarMenuAtaque(String cidade, List<String> tesouros, int custo, boolean comOgedei,
+                                  int x, int y, ActionListener tratador) {
         JPopupMenu menu = new JPopupMenu();
         List<String> jaListados = new ArrayList<String>();
         for (String t : tesouros) {
@@ -520,6 +526,15 @@ public class PainelTabuleiro extends JPanel implements ObservadorIF {
             item.setActionCommand("ATACAR:" + cidade + ":" + t);
             item.addActionListener(tratador);
             menu.add(item);
+        }
+        if (comOgedei) {
+            menu.addSeparator();
+            for (String t : jaListados) {
+                JMenuItem item = new JMenuItem("Ogedei: pegar " + t + " por 1 moeda");
+                item.setActionCommand("OGEDEI:" + cidade + ":" + t);
+                item.addActionListener(tratador);
+                menu.add(item);
+            }
         }
         menu.show(this, x, y);
     }

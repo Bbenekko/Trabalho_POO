@@ -115,13 +115,17 @@ public class ArquivoJogoTest {
 		Jogo jogo = new Jogo(Arrays.asList(Cor.preto, Cor.azul), Arrays.asList(Herdeiro.tolui, Herdeiro.jochi));
 		Jogador j = jogo.getJogadores().get(1);
 		j.receberPecaBonus(TipoPecaBonus.cavalos);
+		j.receberPecaBonus(TipoPecaBonus.moedas);
+		j.usarPecaBonus(1);
 		j.receberTesouro(TipoTesouro.pele);
 		jogo.getTabuleiro().retirarPecaBonus(2);
 		ArquivoJogo.gravar(jogo, arquivo.getPath());
 
 		Jogo lido = ArquivoJogo.ler(arquivo.getPath());
 		Jogador k = lido.getJogadores().get(1);
-		assertEquals(Arrays.asList(TipoPecaBonus.cavalos), k.getPecasBonus());
+		assertEquals(Arrays.asList(TipoPecaBonus.cavalos, TipoPecaBonus.moedas), k.getPecasBonus());
+		assertFalse(k.bonusUsado(0));
+		assertTrue(k.bonusUsado(1));
 		assertEquals(1, k.quantidadeTesouro(TipoTesouro.pele));
 		assertNull(lido.getTabuleiro().pecaBonusNoEspaco(2));
 		assertEquals(jogo.getTabuleiro().pecaBonusNoEspaco(0), lido.getTabuleiro().pecaBonusNoEspaco(0));

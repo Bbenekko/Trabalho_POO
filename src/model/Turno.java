@@ -18,6 +18,10 @@ class Turno {
 	private Map<Cidade, Integer> ataquesPorCidade = new HashMap<Cidade, Integer>();
 	private Map<TipoTributo, Integer> virtuais = new HashMap<TipoTributo, Integer>();
 	private List<Integer> entregasFeitas = new ArrayList<Integer>();
+	// Altani tem 2 peões: no turno, só um age; ele é escolhido antes da 1ª ação com peão e fica até o fim
+	private Peao peaoEscolhido = null;
+	private boolean trocaDeChagataiFeita = false;   // 1 movimento → 1 espada, uma vez por turno
+	private boolean tesouroDeOgedeiComprado = false; // 1 moeda → 1 tesouro, uma vez por turno
 
 	Turno(int numero, Jogador jogador, ColunaAcao coluna, Tabuleiro tabuleiro) {
 		this.numero = numero;
@@ -59,9 +63,32 @@ class Turno {
 
 
 	// ---------- MOVER ----------
+	// ---------- PEÃO QUE AGE (Altani) ----------
+
+	boolean precisaEscolherPeao() {
+		return this.jogador.getPeoes().size() > 1 && this.peaoEscolhido == null;
+	}
+
+	// escolhe o peão que vai agir no turno; só uma vez por turno
+	boolean escolherPeao(Peao peao) {
+		if (peao == null || peao.getDono() != this.jogador)
+			return false;
+		if (this.peaoEscolhido != null)
+			return this.peaoEscolhido == peao;
+		this.peaoEscolhido = peao;
+		return true;
+	}
+
+	Peao getPeaoEscolhido() {
+		return this.peaoQueAge();
+	}
+
 	boolean podeMover(Peao peao, List<Parada> caminho) {
 		if (peao.getDono() != this.jogador || caminho.isEmpty() || caminho.contains(null))
 			return false;
+		Peao agente = this.peaoQueAge();
+		if (agente != null && agente != peao)
+			return false;                          // Altani: o outro peão não age neste turno
 		int custo = this.custoDoCaminho(peao, caminho);
 		if (custo < 0 || custo > this.movimentosRestantes)
 			return false;
@@ -81,6 +108,7 @@ class Turno {
 				novasVisitadas.add(p);
 		}
 
+		this.escolherPeao(peao);                   // mover é uma ação: fixa o peão do turno
 		Parada destino = caminho.get(caminho.size() - 1);
 		this.movimentosRestantes -= this.custoDoCaminho(peao, caminho);
 		peao.moverPara(destino);
@@ -199,7 +227,7 @@ class Turno {
 
 	boolean atacar(Cidade c, TipoTesouro t) {
 		Peao agente = this.peaoQueAge();
-		if (!c.podeSerAtacada() || !c.getTesouros().contains(t))
+		if (agente == null || !c.podeSerAtacada() || !c.getTesouros().contains(t))
 			return false;
 		if (!this.cidadeAlcancavel(agente, c))
 			return false;
@@ -220,6 +248,8 @@ class Turno {
 
 	boolean construirYurt(Parada p) {
 		Peao agente = this.peaoQueAge();
+		if (agente == null)
+			return false;
 		boolean alcanca = this.paradasVisitadas.get(agente).contains(p);
 		if (!alcanca && this.jogador.getHerdeiro() == Herdeiro.tolui)
 			alcanca = this.tabuleiro.saoAdjacentes(agente.getPosicao(), p); 
@@ -243,7 +273,8 @@ class Turno {
 
 		Melhoria m = area.getExpostas().get(posicao);
 		ColunaAcao destino = this.jogador.getTabuleiro().getColuna(coluna);
-		if (destino.estaCheia() || m.getRegiao() != destino.getRegiao())
+		boolean qualquerCor = this.jogador.getTabuleiro().aceitaQualquerCor();     // Jochi
+		if (destino.estaCheia() || (!qualquerCor && m.getRegiao() != destino.getRegiao()))
 			return false;                         
 		if (!this.pagar(TipoTributo.moeda, 2))
 			return false;
@@ -252,6 +283,39 @@ class Turno {
 		m.registrarCompra(this.numero);
 		this.jogador.getTabuleiro().adicionarMelhoria(m, coluna);
 		return true;
+	}
+
+	// compra às cegas a melhoria do topo da pilha (2 moedas). Ela vai para a coluna da região dela;
+	// se essa coluna estiver cheia, para a coluna branca. Sem lugar para ela, a compra é recusada.
+	// colunaPreferida (0 a 2) só vale para Jochi, que pode pôr a melhoria em qualquer coluna
+	boolean comprarMelhoriaDaPilha(int colunaPreferida) {
+		AreaMelhorias area = this.tabuleiro.getAreaMelhorias();
+		Melhoria topo = area.verTopo();
+		if (topo == null)
+			return false;
+		TabuleiroJogador tj = this.jogador.getTabuleiro();
+		int coluna = this.colunaDaRegiao(topo.getRegiao());
+		if (tj.aceitaQualquerCor() && colunaPreferida >= 0 && colunaPreferida <= 2)
+			coluna = colunaPreferida;
+		if (coluna == -1 || tj.getColuna(coluna).estaCheia())
+			coluna = 3;
+		if (tj.getColuna(coluna).estaCheia())
+			return false;
+		if (!this.pagar(TipoTributo.moeda, 2))
+			return false;
+
+		Melhoria m = area.comprarDoTopo();
+		m.registrarCompra(this.numero);
+		tj.adicionarMelhoria(m, coluna);
+		return true;
+	}
+
+	private int colunaDaRegiao(Regiao r) {
+		List<ColunaAcao> colunas = this.jogador.getTabuleiro().getColunas();
+		for (int c = 0; c < 3; c++)
+			if (colunas.get(c).getRegiao() == r)
+				return c;
+		return -1;
 	}
 
 	boolean melhoriaGratisDisponivel() {
@@ -288,7 +352,8 @@ class Turno {
 		if (e == null || this.entregasFeitas.contains(espaco))
 			return false;
 		Parada p = this.tabuleiro.getParada(e.getIdParada());
-		if (!this.paradasVisitadas.get(this.peaoQueAge()).contains(p))
+		Peao agente = this.peaoQueAge();
+		if (agente == null || !this.paradasVisitadas.get(agente).contains(p))
 			return false;
 		List<TipoTesouro> lista = e.tesourosAEntregar(this.jogador);
 		if (lista == null || !this.jogador.entregarTesouros(lista))
@@ -297,14 +362,21 @@ class Turno {
 		this.tabuleiro.getTrilha().registrarVotos(this.jogador, e.getVotos());
 		this.entregasFeitas.add(espaco);
 		TipoPecaBonus peca = this.tabuleiro.retirarPecaBonus(espaco);
-		if (peca != null) {
-			this.jogador.receberPecaBonus(peca);
-			this.aplicarBonus(peca);
-		}
+		if (peca != null)
+			this.jogador.receberPecaBonus(peca);     // fica guardada; o efeito vem quando ela for usada
 		return true;
 	}
 
-	// efeito da peça na hora em que é pega
+	// usa a peça de bônus i do jogador da vez (uma vez só por peça)
+	boolean usarPecaBonus(int i) {
+		TipoPecaBonus peca = this.jogador.usarPecaBonus(i);
+		if (peca == null)
+			return false;
+		this.aplicarBonus(peca);
+		return true;
+	}
+
+	// efeito da peça na hora em que é usada
 	private void aplicarBonus(TipoPecaBonus peca) {
 		switch (peca) {
 			case cavalos:
@@ -340,6 +412,42 @@ class Turno {
 				this.jogador.receberTributo(tipo, 1);
 	}
 
+	// ---------- HABILIDADES DOS HERDEIROS ----------
+
+	// Chagatai: 1x por turno, deixa de usar 1 cavalo (movimento) para ganhar 1 espada
+	boolean podeTrocarMovimentoPorEspada() {
+		return this.jogador.getHerdeiro() == Herdeiro.chagatai && !this.trocaDeChagataiFeita
+				&& this.movimentosRestantes > 0 && this.tabuleiro.getEstoque().quantidadeTributo(TipoTributo.espada) > 0;
+	}
+
+	boolean trocarMovimentoPorEspada() {
+		if (!this.podeTrocarMovimentoPorEspada() || !this.tabuleiro.getEstoque().retirar(TipoTributo.espada))
+			return false;
+		this.movimentosRestantes--;
+		this.jogador.receberTributo(TipoTributo.espada, 1);
+		this.trocaDeChagataiFeita = true;
+		return true;
+	}
+
+	// Ogedei: 1x por turno, paga 1 moeda e pega 1 tesouro de qualquer cidade revelada do mapa,
+	// desde que não seja o último tesouro dela
+	boolean podeComprarTesouroDeOgedei() {
+		return this.jogador.getHerdeiro() == Herdeiro.ogedei && !this.tesouroDeOgedeiComprado;
+	}
+
+	boolean comprarTesouroDeOgedei(Cidade c, TipoTesouro t) {
+		if (!this.podeComprarTesouroDeOgedei() || c == null || !c.isRevelada())
+			return false;
+		if (c.getTesouros().size() < 2 || !c.getTesouros().contains(t))
+			return false;
+		if (!this.pagar(TipoTributo.moeda, 1))
+			return false;
+		c.tomarTesouro(this.jogador, t);
+		this.jogador.receberTesouro(t);
+		this.tesouroDeOgedeiComprado = true;
+		return true;
+	}
+
 	boolean podeEncerrar() {
 		return !this.coluna.exigeKhan() || this.khanUsado;
 	}
@@ -361,16 +469,20 @@ class Turno {
 		return true;
 	}
 
+	// o peão que faz as ações do turno; null se o jogador (Altani) ainda não escolheu
 	private Peao peaoQueAge() {
-		for (Peao p : this.jogador.getPeoes()) {
-			if (p.podeAgir())
-				return p;
-		}
+		if (this.peaoEscolhido != null)
+			return this.peaoEscolhido;
+		if (this.jogador.getPeoes().size() == 1)
+			return this.jogador.getPeoes().get(0);
 		return null;
 	}
 
 	private boolean provinciaAlcancavel(Provincia prov) {
-		for (Parada p : this.paradasVisitadas.get(this.peaoQueAge())) {
+		Peao agente = this.peaoQueAge();
+		if (agente == null)
+			return false;
+		for (Parada p : this.paradasVisitadas.get(agente)) {
 			if (p.getProvincias().contains(prov))
 				return true;
 		}

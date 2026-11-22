@@ -21,6 +21,8 @@ class ArquivoJogo {
 	private static final String CABECALHO = "HERDEIROS_DE_KHAN";
 	private static final int VERSAO = 1;
 	private static final String NULO = "-";
+	private static final String USADA = "@usada";
+	private static final String GUARDADA = "@guardada";
 
 	private ArquivoJogo() {
 	}
@@ -87,8 +89,8 @@ class ArquivoJogo {
 			out.println("VOTOS " + t.getTrilha().votosDe(j));
 
 			out.print("PECAS_BONUS " + j.getPecasBonus().size());
-			for (TipoPecaBonus b : j.getPecasBonus())
-				out.print(" " + b.name());
+			for (int b = 0; b < j.getPecasBonus().size(); b++)
+				out.print(" " + j.getPecasBonus().get(b).name() + (j.bonusUsado(b) ? USADA : GUARDADA));
 			out.println();
 
 			List<ColunaAcao> colunas = j.getTabuleiro().getColunas();
@@ -258,9 +260,17 @@ class ArquivoJogo {
 			esperar(s, "PECAS_BONUS");
 			qtd = s.nextInt();
 			List<TipoPecaBonus> pecas = new ArrayList<TipoPecaBonus>();
-			for (int k = 0; k < qtd; k++)
-				pecas.add(TipoPecaBonus.valueOf(s.next()));
-			j.definirPecasBonus(pecas);
+			List<Boolean> usadas = new ArrayList<Boolean>();
+			for (int k = 0; k < qtd; k++) {
+				String b = s.next();
+				// sem sufixo (arquivo antigo): a peça já tinha sido aplicada ao ser pega, então conta como usada
+				boolean guardada = b.endsWith(GUARDADA);
+				if (guardada || b.endsWith(USADA))
+					b = b.substring(0, b.lastIndexOf('@'));
+				pecas.add(TipoPecaBonus.valueOf(b));
+				usadas.add(!guardada);
+			}
+			j.definirPecasBonus(pecas, usadas);
 
 			for (int c = 0; c < j.getTabuleiro().getColunas().size(); c++) {
 				esperar(s, "COLUNA");

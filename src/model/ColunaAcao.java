@@ -78,9 +78,14 @@ class ColunaAcao
 	}
 
 	boolean adicionaMelhoria(Melhoria melhoria) {
+		return this.adicionaMelhoria(melhoria, false);
+	}
+
+	// ignorarCor: Jochi pode pôr melhoria de qualquer região em qualquer coluna
+	boolean adicionaMelhoria(Melhoria melhoria, boolean ignorarCor) {
 		if (this.estaCheia())
 			return false;
-		if (this.regiao != null && melhoria.getRegiao() != this.regiao)
+		if (!ignorarCor && this.regiao != null && melhoria.getRegiao() != this.regiao)
 			return false;            
 		this.melhorias.add(melhoria);
 		return true;
