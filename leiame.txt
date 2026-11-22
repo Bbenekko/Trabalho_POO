@@ -17,3 +17,4 @@ Como executar
   No Eclipse: botao direito em src/controller/ControladorJogo.java > Run As > Java Application.
   O diretorio de trabalho deve ser a raiz do projeto (as imagens sao lidas de doc/img).
   Testes: pasta test, JUnit 4 (botao direito em test > Run As > JUnit Test).
+

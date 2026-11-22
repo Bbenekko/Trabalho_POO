@@ -223,6 +223,9 @@ public class ControladorJogo {
             janela.mostrarAviso("Ative uma coluna antes de encerrar o turno");
             return;
         }
+        if (!modelo.tesourosDoBau().isEmpty()) {
+            escolherTesouroDoBau();
+        }
         if (!modelo.encerrarTurno()) {
             janela.mostrarAviso("Use o Khan antes de encerrar: esta coluna exige");
             return;
@@ -259,14 +262,45 @@ public class ControladorJogo {
 
     void usarPecaBonus() {
         int peca = janela.getBonusEscolhido();
-        if (peca < 0 || !modelo.usarPecaBonus(peca))
+        if (peca < 0 || !modelo.usarPecaBonus(peca)) {
             janela.mostrarAviso("Não há peça de bônus para usar agora (só no seu turno, uma vez cada)");
+            return;
+        }
+        escolherTesouroDoBau();
+    }
+
+    // baús: o jogador fica com 1 dos 3 tesouros tirados da pilha; os outros são descartados
+    private void escolherTesouroDoBau() {
+        List<String> opcoes = modelo.tesourosDoBau();
+        while (!opcoes.isEmpty()) {
+            int escolha = JOptionPane.showOptionDialog(janela, "Escolha 1 tesouro para ficar (os outros serão descartados):",
+                    "Baús", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null,
+                    opcoes.toArray(), opcoes.get(0));
+            if (escolha >= 0)
+                modelo.escolherTesouroDoBau(escolha);
+            opcoes = modelo.tesourosDoBau();
+        }
     }
 
     void pegarMelhoriaGratis() {
-        int posicao = janela.getComboMelhorias().getSelectedIndex();
-        if (posicao < 0 || !modelo.pegarMelhoriaGratis(posicao))
+        if (!modelo.melhoriaGratisDisponivel()) {
             janela.mostrarAviso("Nenhuma melhoria grátis disponível agora");
+            return;
+        }
+        // a melhoria grátis pode ser a selecionada na área de melhorias ou a do topo da pilha, às cegas
+        int posicao = janela.getComboMelhorias().getSelectedIndex();
+        String[] opcoes = {"Melhoria selecionada", "Topo da pilha (às cegas)"};
+        int escolha = JOptionPane.showOptionDialog(janela, "De onde vem a melhoria grátis?", "Melhoria grátis",
+                JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, opcoes, opcoes[0]);
+        boolean ok;
+        if (escolha == 0)
+            ok = posicao >= 0 && modelo.pegarMelhoriaGratis(posicao);
+        else if (escolha == 1)
+            ok = modelo.pegarMelhoriaGratisDaPilha();
+        else
+            return;
+        if (!ok)
+            janela.mostrarAviso("Não foi possível pegar a melhoria grátis (coluna branca cheia ou nada selecionado)");
     }
 
     void verCartela() {

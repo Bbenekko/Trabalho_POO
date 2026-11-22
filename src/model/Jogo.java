@@ -110,6 +110,7 @@ class Jogo {
 
 		this.numeroDoTurno++;
 		this.turnoAtual = new Turno(this.numeroDoTurno, this.jogadorDaVez(), escolhida, this.tabuleiro);
+		this.turnoAtual.verificarCartasAbertas();   // a demanda pode já estar cumprida no início do turno
 		return true;
 	}
 
@@ -161,26 +162,100 @@ class Jogo {
 		return true;
 	}
 
+	// votos de final de jogo: trilha do Kurultai + influência nas 3 regiões + carta secreta
 	int pontuacaoFinal(Jogador j) {
-		int total = this.tabuleiro.getTrilha().votosDe(j);
-		if (j.getCartaSecreta() != null)
-			total += j.getCartaSecreta().votos(j, this.tabuleiro);
+		return this.tabuleiro.getTrilha().votosDe(j) + this.votosDeInfluencia(j) + this.votosDaCartaSecreta(j);
+	}
+
+	int votosDaCartaSecreta(Jogador j) {
+		return (j.getCartaSecreta() == null) ? 0 : j.getCartaSecreta().votos(j, this.tabuleiro);
+	}
+
+	// ---------- influência sobre as 3 regiões (manual, pág. 14-15) ----------
+
+	// tabela impressa acima da área de melhorias; o índice é o nº de melhorias na coluna da região (0 a 4)
+	private static final int[] VOTOS_MAIS_YURTS = {1, 1, 2, 2, 3};
+	private static final int[] VOTOS_SEGUNDO_MAIS_YURTS = {0, 1, 1, 2, 2};
+
+	int votosDeInfluencia(Jogador j) {
+		int total = 0;
+		for (Regiao r : Regiao.values())
+			total += this.votosDeInfluencia(j, r);
 		return total;
 	}
 
+	// quem tem mais yurts na região e quem tem o 2º maior número ganham votos conforme as melhorias
+	// na coluna dessa região. Empate em 1º: todos ficam em 1º e ninguém fica em 2º.
+	// Empate em 2º: todos ficam em 2º. Yurts em cidades conquistadas contam; o de Karakorum não.
+	int votosDeInfluencia(Jogador j, Regiao r) {
+		int meus = this.tabuleiro.contarYurts(j, r);
+		if (meus == 0)
+			return 0;
+		int maior = 0;
+		int noTopo = 0;
+		for (Jogador q : this.jogadores) {
+			int y = this.tabuleiro.contarYurts(q, r);
+			if (y > maior) {
+				maior = y;
+				noTopo = 1;
+			} else if (y == maior) {
+				noTopo++;
+			}
+		}
+		int melhorias = Math.min(4, j.getTabuleiro().contarMelhorias(r));
+		if (meus == maior)
+			return VOTOS_MAIS_YURTS[melhorias];
+		if (noTopo > 1)
+			return 0;
+		int segundo = 0;
+		for (Jogador q : this.jogadores) {
+			int y = this.tabuleiro.contarYurts(q, r);
+			if (y < maior && y > segundo)
+				segundo = y;
+		}
+		return (meus == segundo) ? VOTOS_SEGUNDO_MAIS_YURTS[melhorias] : 0;
+	}
+
+	// mais votos vence. Desempate (manual, pág. 16): mais tesouros não entregues; depois, quem está
+	// mais perto de Karakorum. Se ainda houver empate, a vitória é compartilhada.
 	List<Jogador> vencedores() {
+		List<Jogador> melhores = new ArrayList<Jogador>(this.jogadores);
+		melhores = this.manterMelhores(melhores, 0);
+		melhores = this.manterMelhores(melhores, 1);
+		melhores = this.manterMelhores(melhores, 2);
+		return melhores;
+	}
+
+	// criterio 0: votos (maior); 1: tesouros não entregues (maior); 2: distância a Karakorum (menor)
+	private List<Jogador> manterMelhores(List<Jogador> candidatos, int criterio) {
 		List<Jogador> melhores = new ArrayList<Jogador>();
-		int maior = -1;
-		for (Jogador j : this.jogadores) {
-			int pontos = this.pontuacaoFinal(j);
-			if (pontos > maior) {
-				maior = pontos;
+		int melhor = Integer.MIN_VALUE;
+		for (Jogador j : candidatos) {
+			int valor;
+			if (criterio == 0)
+				valor = this.pontuacaoFinal(j);
+			else if (criterio == 1)
+				valor = j.totalDeTesouros();
+			else
+				valor = -this.distanciaAKarakorum(j);
+			if (valor > melhor) {
+				melhor = valor;
 				melhores.clear();
 			}
-			if (pontos == maior)
+			if (valor == melhor)
 				melhores.add(j);
 		}
 		return melhores;
+	}
+
+	// menor número de paradas entre um peão do jogador e Karakorum (Altani: o peão mais perto)
+	int distanciaAKarakorum(Jogador j) {
+		Parada karakorum = this.tabuleiro.getParada(Tabuleiro.KARAKORUM);
+		int menor = Integer.MAX_VALUE;
+		for (Peao p : j.getPeoes())
+			if (p.getPosicao() != null)
+				menor = Math.min(menor, this.tabuleiro.distancia(p.getPosicao(), karakorum));
+		return menor;
 	}
 
 	// ---------- usados pelo salvamento e pela recuperação (ArquivoJogo) ----------

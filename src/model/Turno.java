@@ -1,6 +1,7 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,6 +23,10 @@ class Turno {
 	private Peao peaoEscolhido = null;
 	private boolean trocaDeChagataiFeita = false;   // 1 movimento → 1 espada, uma vez por turno
 	private boolean tesouroDeOgedeiComprado = false; // 1 moeda → 1 tesouro, uma vez por turno
+	// melhorias de tesouro da coluna ativada: cada uma vale 1 tesouro do seu tipo neste turno
+	private List<TipoTesouro> tesourosVirtuais = new ArrayList<TipoTesouro>();
+	// peça de bônus "baús": 3 tesouros tirados da pilha esperando o jogador escolher 1 (null = nada pendente)
+	private List<TipoTesouro> bauParaEscolher = null;
 
 	Turno(int numero, Jogador jogador, ColunaAcao coluna, Tabuleiro tabuleiro) {
 		this.numero = numero;
@@ -32,6 +37,7 @@ class Turno {
 		this.tributosRestantes = coluna.acoesDeTributo(numero);
 		for (TipoTributo t : TipoTributo.values())
 			this.virtuais.put(t, coluna.virtuais(t, numero));
+		this.tesourosVirtuais.addAll(coluna.tesourosVirtuais(numero));
 
 		for (Peao p : jogador.getPeoes()) {
 			List<Parada> visitadas = new ArrayList<Parada>();
@@ -113,7 +119,7 @@ class Turno {
 		this.movimentosRestantes -= this.custoDoCaminho(peao, caminho);
 		peao.moverPara(destino);
 		this.paradasVisitadas.get(peao).addAll(novasVisitadas);
-		return true;
+		return this.concluir();
 	}
 
 	List<Parada> caminhoAte(Peao peao, Parada destino) {
@@ -187,7 +193,7 @@ class Turno {
 			return false;
 		this.jogador.receberTributo(p.getTipoTributo(), 1);
 		this.tributosRestantes--;
-		return true;
+		return this.concluir();
 	}
 
 
@@ -198,7 +204,7 @@ class Turno {
 			return false;
 		p.receberKhan(this.tabuleiro.getEstoque());
 		this.khanUsado = true;
-		return true;
+		return this.concluir();
 	}
 
 	boolean usarKhanNasMelhorias() {
@@ -216,7 +222,7 @@ class Turno {
 		area.repor();
 
 		this.khanUsado = true;
-		return true;
+		return this.concluir();
 	}
 
 	int custoAtaque(Cidade c) {
@@ -242,7 +248,7 @@ class Turno {
 			this.jogador.usarYurt();
 			this.tabuleiro.revelarProximaCidade();
 		}
-		return true;
+		return this.concluir();
 	}
 
 
@@ -261,7 +267,7 @@ class Turno {
 
 		this.jogador.usarYurt();
 		p.construirYurt(this.jogador);
-		return true;
+		return this.concluir();
 	}
 
 	boolean comprarMelhoria(int posicao, int coluna) {
@@ -282,7 +288,7 @@ class Turno {
 		area.comprar(posicao);
 		m.registrarCompra(this.numero);
 		this.jogador.getTabuleiro().adicionarMelhoria(m, coluna);
-		return true;
+		return this.concluir();
 	}
 
 	// compra às cegas a melhoria do topo da pilha (2 moedas). Ela vai para a coluna da região dela;
@@ -307,7 +313,7 @@ class Turno {
 		Melhoria m = area.comprarDoTopo();
 		m.registrarCompra(this.numero);
 		tj.adicionarMelhoria(m, coluna);
-		return true;
+		return this.concluir();
 	}
 
 	private int colunaDaRegiao(Regiao r) {
@@ -333,7 +339,19 @@ class Turno {
 		Melhoria m = area.comprar(posicao);
 		m.registrarCompra(this.numero);
 		this.jogador.getTabuleiro().adicionarMelhoria(m, 3);
-		return true;
+		return this.concluir();
+	}
+
+	// a melhoria grátis também pode ser a do topo da pilha, às cegas (manual, pág. 12)
+	boolean pegarMelhoriaGratisDaPilha() {
+		if (!this.melhoriaGratisDisponivel() || this.jogador.getTabuleiro().getColuna(3).estaCheia())
+			return false;
+		Melhoria m = this.tabuleiro.getAreaMelhorias().comprarDoTopo();
+		if (m == null)
+			return false;
+		m.registrarCompra(this.numero);
+		this.jogador.getTabuleiro().adicionarMelhoria(m, 3);
+		return this.concluir();
 	}
 
 	boolean temMelhoriaGratis(int coluna) {
@@ -355,16 +373,19 @@ class Turno {
 		Peao agente = this.peaoQueAge();
 		if (agente == null || !this.paradasVisitadas.get(agente).contains(p))
 			return false;
-		List<TipoTesouro> lista = e.tesourosAEntregar(this.jogador);
+		List<TipoTesouro> usados = new ArrayList<TipoTesouro>();
+		List<TipoTesouro> lista = e.tesourosAEntregar(this.jogador, this.tesourosVirtuais, usados);
 		if (lista == null || !this.jogador.entregarTesouros(lista))
 			return false;
+		for (TipoTesouro t : usados)
+			this.tesourosVirtuais.remove(t);
 
 		this.tabuleiro.getTrilha().registrarVotos(this.jogador, e.getVotos());
 		this.entregasFeitas.add(espaco);
 		TipoPecaBonus peca = this.tabuleiro.retirarPecaBonus(espaco);
 		if (peca != null)
 			this.jogador.receberPecaBonus(peca);     // fica guardada; o efeito vem quando ela for usada
-		return true;
+		return this.concluir();
 	}
 
 	// usa a peça de bônus i do jogador da vez (uma vez só por peça)
@@ -373,7 +394,7 @@ class Turno {
 		if (peca == null)
 			return false;
 		this.aplicarBonus(peca);
-		return true;
+		return this.concluir();
 	}
 
 	// efeito da peça na hora em que é usada
@@ -398,10 +419,17 @@ class Turno {
 			case moedas:
 				this.receberDoEstoque(TipoTributo.moeda, 2);
 				break;
-			default: {                                  // tesouro: um baú tirado do estoque
-				TipoTesouro t = this.tabuleiro.getEstoque().sortearTesouro();
-				if (t != null)
-					this.jogador.receberTesouro(t);
+			default: {      // baús: tira 3 tesouros da pilha; o jogador escolhe 1 e os outros são descartados
+				List<TipoTesouro> tirados = new ArrayList<TipoTesouro>();
+				for (int n = 0; n < 3; n++) {
+					TipoTesouro t = this.tabuleiro.getEstoque().sortearTesouro();
+					if (t != null)
+						tirados.add(t);
+				}
+				if (tirados.size() == 1)
+					this.jogador.receberTesouro(tirados.get(0));
+				else if (tirados.size() > 1)
+					this.bauParaEscolher = tirados;
 			}
 		}
 	}
@@ -426,7 +454,7 @@ class Turno {
 		this.movimentosRestantes--;
 		this.jogador.receberTributo(TipoTributo.espada, 1);
 		this.trocaDeChagataiFeita = true;
-		return true;
+		return this.concluir();
 	}
 
 	// Ogedei: 1x por turno, paga 1 moeda e pega 1 tesouro de qualquer cidade revelada do mapa,
@@ -445,11 +473,41 @@ class Turno {
 		c.tomarTesouro(this.jogador, t);
 		this.jogador.receberTesouro(t);
 		this.tesouroDeOgedeiComprado = true;
-		return true;
+		return this.concluir();
 	}
 
 	boolean podeEncerrar() {
-		return !this.coluna.exigeKhan() || this.khanUsado;
+		return (!this.coluna.exigeKhan() || this.khanUsado) && this.bauParaEscolher == null;
+	}
+
+	// ---------- BAÚS: escolha de 1 dos 3 tesouros ----------
+
+	List<TipoTesouro> getTesourosDoBau() {
+		return (this.bauParaEscolher == null) ? new ArrayList<TipoTesouro>()
+				: Collections.unmodifiableList(this.bauParaEscolher);
+	}
+
+	boolean escolherTesouroDoBau(int i) {
+		if (this.bauParaEscolher == null || i < 0 || i >= this.bauParaEscolher.size())
+			return false;
+		this.jogador.receberTesouro(this.bauParaEscolher.get(i));
+		this.bauParaEscolher = null;           // os outros ficam fora do jogo
+		return this.concluir();
+	}
+
+	List<TipoTesouro> getTesourosVirtuais() {
+		return Collections.unmodifiableList(this.tesourosVirtuais);
+	}
+
+	// as cartas de conselheiro aberto valem "a qualquer momento do turno": confere depois de cada ação
+	void verificarCartasAbertas() {
+		for (CartaConselheiroAberto carta : this.tabuleiro.getCartasAbertas())
+			carta.verificar(this.jogador, this.tabuleiro, this.tesourosVirtuais);
+	}
+
+	private boolean concluir() {
+		this.verificarCartasAbertas();
+		return true;
 	}
 
 	private boolean pagar(TipoTributo tipo, int quantidade) {
