@@ -130,7 +130,6 @@ public class ModelFacade implements ObservadoIF {
 			System.out.println("Erro ao carregar: " + e.getMessage());
 			return false;
 		}
-		this.notificar(NOVO_JOGO);
 		return true;
 	}
 
